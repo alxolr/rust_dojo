@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 fn som(x: i64, y: i64) -> i64 {
     x + y
 }

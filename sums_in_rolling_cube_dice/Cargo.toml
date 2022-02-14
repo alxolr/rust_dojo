@@ -1,0 +1,14 @@
+[profile.bench]
+debug = true
+
+
+[package]
+name = "sums_in_rolling_cube_dice"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+float_eq = "0"
+

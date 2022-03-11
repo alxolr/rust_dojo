@@ -2,7 +2,7 @@ use float_eq::float_eq;
 
 fn rolldice_sum_prob(sum: i32, dice_amount: i32) -> f64 {
     let combos = 6_f64.powf(dice_amount as f64);
-    // will return all cobinations possible to crate using dices the sum amount
+    // will return all combinations possible to crate using dices the sum amount
     let solutions = roll_dices_sum(sum, dice_amount).len();
 
     solutions as f64 / combos

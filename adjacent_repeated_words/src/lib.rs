@@ -3,21 +3,19 @@ pub fn count_adjacent_pairs(search_string: &str) -> usize {
         return 0;
     } else {
         let lower_cased = search_string.to_lowercase();
-        let splitted_words=  lower_cased.split_whitespace().collect::<Vec<_>>();
+        let splitted_words = lower_cased.split_whitespace().collect::<Vec<_>>();
         let mut prev = "".to_string();
 
-        return splitted_words
-            .windows(2)
-            .fold(0, |mut acc, item| {
-                if !(join_str(item) == prev) {
-                    prev = join_str(item);
-                    if item[0] == item[1] {
-                        acc += 1;
-                    }
+        return splitted_words.windows(2).fold(0, |mut acc, item| {
+            if !(join_str(item) == prev) {
+                prev = join_str(item);
+                if item[0] == item[1] {
+                    acc += 1;
                 }
+            }
 
-                acc
-            }) as usize;
+            acc
+        }) as usize;
     }
 }
 

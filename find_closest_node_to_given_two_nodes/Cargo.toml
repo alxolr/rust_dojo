@@ -1,0 +1,8 @@
+[package]
+name = "find_closest_node_to_given_two_nodes"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]

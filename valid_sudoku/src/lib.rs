@@ -2,6 +2,18 @@ use std::collections::HashSet;
 
 struct Solution;
 
+fn fibo(n: i32) -> i32 {
+    if n == 0 {
+        return 0;
+    }
+
+    if n == 1 {
+        return 1;
+    }
+
+    fibo(n - 1) + fibo(n - 2)
+}
+
 fn validate(range: &[char]) -> bool {
     let digits = range
         .iter()
@@ -89,4 +101,7 @@ mod tests {
                 println!("  ✓ scenario {}", idx + 1)
             });
     }
+
+    #[test]
+    fn test_things_work() {}
 }

@@ -41,7 +41,7 @@ pub fn calculate_leaderboard_places(users: Vec<User>, min_places: PlaceThreshold
             }
         }
 
-        if score_thresholds.len() == 0 {
+        if score_thresholds.len() == 0 && user.place.is_none() {
             user.place = Some((place + 1) as u32);
             place += 1;
             users_with_place.push(user.clone());
@@ -59,54 +59,91 @@ mod tests {
     use super::*;
 
     #[test]
-    fn it_works() {
-        let users = json!([
-            {
-                "userId": "id1",
-                "score": 3
-            },
-            {
-                "userId": "id2",
-                "score": 2
-            },
-            {
-                "userId": "id3",
-                "score": 1
-            }
-        ]);
+    fn scenario_1() {
+        let scenarios = vec![
+            (
+                (
+                    json!([
+                        { "userId": "id1", "score": 3 },
+                        { "userId": "id2", "score": 2 },
+                        { "userId": "id3", "score": 1 }
+                    ]),
+                    json!({
+                        "firstPlaceMinScore": 100,
+                        "secondPlaceMinScore": 50,
+                        "thirdPlaceMinScore": 10
+                    }),
+                ),
+                json!([
+                    { "userId": "id1", "score": 3, "place": 4 },
+                    { "userId": "id2", "score": 2, "place": 5 },
+                    { "userId": "id3", "score": 1, "place": 6 }
+                ]),
+            ),
+            (
+                (
+                    json!([
+                        { "userId": "id1", "score": 100 },
+                        { "userId": "id2", "score": 3 },
+                        { "userId": "id3", "score": 2 },
+                        { "userId": "id4", "score": 1 }
+                    ]),
+                    json!({
+                        "firstPlaceMinScore": 100,
+                        "secondPlaceMinScore": 50,
+                        "thirdPlaceMinScore": 10
+                    }),
+                ),
+                json!([
+                    { "userId": "id1", "score": 100, "place": 1 },
+                    { "userId": "id2", "score": 3, "place": 4 },
+                    { "userId": "id3", "score": 2, "place": 5 },
+                    { "userId": "id4", "score": 1, "place": 6 }
+                ]),
+            ),
+            (
+                (
+                    json!([
+                        { "userId": "id1", "score": 55 },
+                    ]),
+                    json!({
+                        "firstPlaceMinScore": 100,
+                        "secondPlaceMinScore": 50,
+                        "thirdPlaceMinScore": 10
+                    }),
+                ),
+                json!([
+                    { "userId": "id1", "score": 55, "place": 2 },
+                ]),
+            ),
+            (
+                (
+                    json!([
+                        { "userId": "id1", "score": 300 },
+                        { "userId": "id2", "score": 200 },
+                        { "userId": "id3", "score": 100 }
+                    ]),
+                    json!({
+                        "firstPlaceMinScore": 100,
+                        "secondPlaceMinScore": 50,
+                        "thirdPlaceMinScore": 10
+                    }),
+                ),
+                json!([
+                    { "userId": "id1", "score": 300, "place": 1 },
+                    { "userId": "id2", "score": 200, "place": 2 },
+                    { "userId": "id3", "score": 100, "place": 3 }
+                ]),
+            ),
+        ];
 
-        let score_threshold = json!({
-            "firstPlaceMinScore": 100,
-            "secondPlaceMinScore": 50,
-            "thirdPlaceMinScore": 10
-        });
+        for ((users, thresholds), expected) in scenarios {
+            let users: Vec<User> = serde_json::from_value(users).unwrap();
+            let score_threshold: PlaceThreshold = serde_json::from_value(thresholds).unwrap();
 
-        let expected = json!([
-            {
-                "userId": "id1",
-                "score": 3,
-                "place": 4
-            },
-            {
-                "userId": "id2",
-                "score": 2,
-                "place": 5
-            },
-            {
-                "userId": "id3",
-                "score": 1,
-                "place": 6
-            }
-        ]);
-
-        let users: Vec<User> = serde_json::from_value(users).unwrap();
-        let score_threshold: PlaceThreshold = serde_json::from_value(score_threshold).unwrap();
-
-        let result_users = calculate_leaderboard_places(users, score_threshold);
-        let expected: Vec<User> = serde_json::from_value(expected).unwrap();
-
-        println!("{:?}", result_users);
-
-        assert_vec_eq!(result_users, expected);
+            let result_users = calculate_leaderboard_places(users, score_threshold);
+            let expected: Vec<User> = serde_json::from_value(expected).unwrap();
+            assert_vec_eq!(result_users, expected);
+        }
     }
 }

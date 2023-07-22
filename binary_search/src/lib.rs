@@ -1,9 +1,24 @@
-pub struct Solution;
+pub fn search<T>(collection: &Vec<T>, item: T) -> usize
+where
+    T: PartialOrd + PartialEq,
+{
+    let mut low = 0;
+    let mut high = collection.len() - 1;
 
-impl Solution {
-    pub fn search_insert(nums: Vec<i32>, target: i32) -> i32 {
-        nums.binary_search(&target).unwrap_or_else(|x| x) as i32
+    while low <= high {
+        let mid = (low + high) / 2;
+        let guess = &collection[mid];
+
+        if guess == &item {
+            return mid;
+        } else if guess > &item {
+            high = mid - 1;
+        } else {
+            low = mid + 1;
+        }
     }
+
+    return 0;
 }
 
 #[cfg(test)]
@@ -12,19 +27,9 @@ mod tests {
 
     #[test]
     fn it_works() {
-        let scenarios = vec![
-            ((vec![1, 3, 5, 6], 5), 2),
-            ((vec![1, 3, 5, 6], 6), 3),
-            ((vec![1, 3, 5, 6], 7), 4),
-        ];
+        let collection = vec![1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-        scenarios
-            .into_iter()
-            .enumerate()
-            .for_each(|(idx, ((nums, target), expected))| {
-                let result = Solution::search_insert(nums, target);
-                assert_eq!(result, expected);
-                println!("  ✓ scenario {}", idx + 1)
-            });
+        assert_eq!(search(&collection, 1), 0);
+        assert_eq!(search(&collection, 8), 7);
     }
 }

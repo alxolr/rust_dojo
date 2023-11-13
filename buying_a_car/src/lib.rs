@@ -22,6 +22,7 @@ pub fn nb_months(old: i32, new: i32, saving: i32, perc: f64) -> (i32, i32) {
             depr += 0.5;
         }
     }
+
     let remaining =
         ((old_car_depr + (months * saving) as f64) as f64 - new_car_depr).round() as i32;
 

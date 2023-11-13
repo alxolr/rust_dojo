@@ -17,7 +17,7 @@ fn wave_sort(xs: &mut [i32]) {
 }
 
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
 
     use super::*;
 

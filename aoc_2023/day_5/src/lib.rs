@@ -1,3 +1,4 @@
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use regex::Regex;
 
 #[derive(Debug, PartialEq)]
@@ -6,34 +7,26 @@ struct Almanac {
     maps: Vec<Vec<(u64, u64, u64)>>,
 }
 
-fn part_1(almanac_str: String) -> Result<u64> {
+fn part_2(almanac_str: String) -> Result<u64> {
     let almanac: Almanac = almanac_str.as_str().try_into()?;
-    
-    let paths = almanac.process()?;
-    let result = paths.iter().map(|x| x.last().unwrap()).min().unwrap();
 
-    Ok(*result)
+    let result = almanac.process()?;
+
+    Ok(result)
 }
 
 impl Almanac {
-    fn process(&self) -> Result<Vec<Vec<u64>>> {
+    fn process(&self) -> Result<u64> {
         let seed_paths = &self
             .seeds
-            .iter()
-            .map(|x| {
-                let path = vec![*x];
-
-                path
-            })
-            .map(|path| {
-                let path = self.maps.iter().fold(path, |mut acc, ranges| {
-                    let destination = acc.last().unwrap();
-
-                    let mut source: u64 = *destination;
+            .par_iter()
+            .map(|seed| {
+                let path = self.maps.iter().fold(*seed, |destination, ranges| {
+                    let mut source: u64 = destination;
 
                     // find the needed range
                     let maybe_range = ranges.iter().find(|(_, dest_start, rng)| {
-                        if destination >= dest_start && destination <= &(dest_start + rng) {
+                        if destination >= *dest_start && destination < (dest_start + rng) {
                             true
                         } else {
                             false
@@ -46,16 +39,15 @@ impl Almanac {
                         source = source_start + distance;
                     }
 
-                    acc.push(source);
-
-                    acc
+                    source
                 });
 
                 path
             })
-            .collect::<Vec<Vec<u64>>>();
+            .min()
+            .unwrap();
 
-        Ok(seed_paths.to_owned())
+        Ok(*seed_paths)
     }
 }
 
@@ -115,7 +107,15 @@ impl TryFrom<&str> for Almanac {
             })
             .collect::<Vec<_>>();
 
-        let seeds: Vec<u64> = match_numbers(seed_line)?;
+        let seeds: Vec<u64> = match_numbers(seed_line)?
+            .chunks(2)
+            .map(|item| {
+                let [start, end]: [u64; 2] = item.try_into().unwrap();
+
+                (start..(start + end)).collect::<Vec<u64>>()
+            })
+            .flatten()
+            .collect();
 
         Ok(Almanac { seeds, maps })
     }
@@ -189,10 +189,9 @@ mod tests {
     #[test]
     fn test_part_one_from_file_ok() -> Result<()> {
         let example_str = load_contents("./data/input")?;
+        let solution = part_2(example_str)?;
 
-        let solution = part_1(example_str)?;
-
-        assert_eq!(solution, 35);
+        assert_eq!(solution, 24261545);
 
         Ok(())
     }
@@ -201,9 +200,9 @@ mod tests {
     fn test_lowest_location_number_from_example() -> Result<()> {
         let example_str = example();
 
-        let solution = part_1(example_str)?;
+        let solution = part_2(example_str)?;
 
-        assert_eq!(solution, 35);
+        assert_eq!(solution, 46);
 
         Ok(())
     }
@@ -212,12 +211,7 @@ mod tests {
     fn test_fold_seeds_to_maps_ok() -> Result<()> {
         let almanac = almanac_example();
 
-        let expected_paths = vec![
-            vec![79, 81, 81, 81, 74, 78, 78, 82],
-            vec![14, 14, 53, 49, 42, 42, 43, 43],
-            vec![55, 57, 57, 53, 46, 82, 82, 86],
-            vec![13, 13, 52, 41, 34, 34, 35, 35],
-        ];
+        let expected_paths = 35;
 
         let paths = almanac.process()?;
 

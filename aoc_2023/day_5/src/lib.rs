@@ -1,14 +1,70 @@
+use regex::Regex;
+
 #[derive(Debug, PartialEq)]
 struct Almanac {
     seeds: Vec<u32>,
     maps: Vec<Vec<(u32, u32, u32)>>,
 }
 
+fn match_numbers(haystack: &str) -> Result<Vec<u32>> {
+    let numbers_re = Regex::new(r"(\d+)").unwrap();
+
+    let result = numbers_re
+        .find_iter(haystack)
+        .filter_map(|digits| digits.as_str().parse::<u32>().ok())
+        .collect();
+
+    Ok(result)
+}
+
 impl TryFrom<&str> for Almanac {
     type Error = Box<dyn std::error::Error>;
 
     fn try_from(value: &str) -> Result<Self> {
-        todo!()
+        let mut seed_line = "";
+        let mut maps = vec![];
+
+        let mut stack = vec![];
+
+        for (idx, line) in value.lines().enumerate() {
+            if idx == 0 {
+                seed_line = line;
+                continue;
+            }
+            if line.is_empty() {
+                maps.push(stack.clone());
+                stack = vec![];
+            } else {
+                stack.push(line.trim());
+            }
+        }
+
+        maps.push(stack.clone()); // don't forget to put the last step in as well
+
+        let maps = maps
+            .iter()
+            .filter(|it| !it.is_empty())
+            .map(|item| {
+                item.iter()
+                    .map(|l| l.trim())
+                    .filter(|line| {
+                        let chars: Vec<char> = line.trim().chars().collect();
+
+                        !line.is_empty() && chars.first().unwrap().is_ascii_digit()
+                    })
+                    .flat_map(match_numbers)
+                    .map(|it| {
+                        let [source, destination, range]: [u32; 3] = it.try_into().unwrap();
+
+                        (source, destination, range)
+                    })
+                    .collect::<Vec<_>>()
+            })
+            .collect::<Vec<_>>();
+
+        let seeds: Vec<u32> = match_numbers(seed_line)?;
+
+        Ok(Almanac { seeds, maps })
     }
 }
 
@@ -19,8 +75,7 @@ mod tests {
     use super::*;
 
     fn example() -> String {
-        "
-        seeds: 79 14 55 13
+        "seeds: 79 14 55 13
 
         seed-to-soil map:
         50 98 2

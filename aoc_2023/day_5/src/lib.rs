@@ -2,16 +2,69 @@ use regex::Regex;
 
 #[derive(Debug, PartialEq)]
 struct Almanac {
-    seeds: Vec<u32>,
-    maps: Vec<Vec<(u32, u32, u32)>>,
+    seeds: Vec<u64>,
+    maps: Vec<Vec<(u64, u64, u64)>>,
 }
 
-fn match_numbers(haystack: &str) -> Result<Vec<u32>> {
+fn part_1(almanac_str: String) -> Result<u64> {
+    let almanac: Almanac = almanac_str.as_str().try_into()?;
+    
+    let paths = almanac.process()?;
+    let result = paths.iter().map(|x| x.last().unwrap()).min().unwrap();
+
+    Ok(*result)
+}
+
+impl Almanac {
+    fn process(&self) -> Result<Vec<Vec<u64>>> {
+        let seed_paths = &self
+            .seeds
+            .iter()
+            .map(|x| {
+                let path = vec![*x];
+
+                path
+            })
+            .map(|path| {
+                let path = self.maps.iter().fold(path, |mut acc, ranges| {
+                    let destination = acc.last().unwrap();
+
+                    let mut source: u64 = *destination;
+
+                    // find the needed range
+                    let maybe_range = ranges.iter().find(|(_, dest_start, rng)| {
+                        if destination >= dest_start && destination <= &(dest_start + rng) {
+                            true
+                        } else {
+                            false
+                        }
+                    });
+
+                    if let Some((source_start, dest_start, _)) = maybe_range {
+                        let distance = destination - dest_start;
+
+                        source = source_start + distance;
+                    }
+
+                    acc.push(source);
+
+                    acc
+                });
+
+                path
+            })
+            .collect::<Vec<Vec<u64>>>();
+
+        Ok(seed_paths.to_owned())
+    }
+}
+
+fn match_numbers(haystack: &str) -> Result<Vec<u64>> {
     let numbers_re = Regex::new(r"(\d+)").unwrap();
 
     let result = numbers_re
         .find_iter(haystack)
-        .filter_map(|digits| digits.as_str().parse::<u32>().ok())
+        .filter_map(|digits| digits.as_str().parse::<u64>().ok())
         .collect();
 
     Ok(result)
@@ -54,15 +107,15 @@ impl TryFrom<&str> for Almanac {
                     })
                     .flat_map(match_numbers)
                     .map(|it| {
-                        let [source, destination, range]: [u32; 3] = it.try_into().unwrap();
+                        let [destination, source, range]: [u64; 3] = it.try_into().unwrap();
 
-                        (source, destination, range)
+                        (destination, source, range)
                     })
                     .collect::<Vec<_>>()
             })
             .collect::<Vec<_>>();
 
-        let seeds: Vec<u32> = match_numbers(seed_line)?;
+        let seeds: Vec<u64> = match_numbers(seed_line)?;
 
         Ok(Almanac { seeds, maps })
     }
@@ -72,6 +125,8 @@ type Result<T> = core::result::Result<T, Box<dyn std::error::Error>>;
 
 #[cfg(test)]
 mod tests {
+    use std::fs;
+
     use super::*;
 
     fn example() -> String {
@@ -112,27 +167,71 @@ mod tests {
         .to_string()
     }
 
+    fn almanac_example() -> Almanac {
+        Almanac {
+            seeds: vec![79, 14, 55, 13],
+            maps: vec![
+                vec![(50, 98, 2), (52, 50, 48)],             // seed to soil
+                vec![(0, 15, 37), (37, 52, 2), (39, 0, 15)], // soil to fertilizer
+                vec![(49, 53, 8), (0, 11, 42), (42, 0, 7), (57, 7, 4)], // fertilizer to water
+                vec![(88, 18, 7), (18, 25, 70)],             // water to light
+                vec![(45, 77, 23), (81, 45, 19), (68, 64, 13)], // light to temperature
+                vec![(0, 69, 1), (1, 0, 69)],                // temperature to humidity
+                vec![(60, 56, 37), (56, 93, 4)],             // humidity to location
+            ],
+        }
+    }
+
+    fn load_contents(path: &str) -> Result<String> {
+        Ok(fs::read_to_string(path)?)
+    }
+
+    #[test]
+    fn test_part_one_from_file_ok() -> Result<()> {
+        let example_str = load_contents("./data/input")?;
+
+        let solution = part_1(example_str)?;
+
+        assert_eq!(solution, 35);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_lowest_location_number_from_example() -> Result<()> {
+        let example_str = example();
+
+        let solution = part_1(example_str)?;
+
+        assert_eq!(solution, 35);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_fold_seeds_to_maps_ok() -> Result<()> {
+        let almanac = almanac_example();
+
+        let expected_paths = vec![
+            vec![79, 81, 81, 81, 74, 78, 78, 82],
+            vec![14, 14, 53, 49, 42, 42, 43, 43],
+            vec![55, 57, 57, 53, 46, 82, 82, 86],
+            vec![13, 13, 52, 41, 34, 34, 35, 35],
+        ];
+
+        let paths = almanac.process()?;
+
+        assert_eq!(paths, expected_paths);
+
+        Ok(())
+    }
+
     #[test]
     fn test_create_almanac_from_example_ok() -> Result<()> {
         let almanac_str = example();
-
         let almanac: Almanac = almanac_str.as_str().try_into()?;
 
-        assert_eq!(
-            almanac,
-            Almanac {
-                seeds: vec![79, 14, 55, 13],
-                maps: vec![
-                    vec![(50, 98, 2), (52, 50, 48)],             // seed to soil
-                    vec![(0, 15, 37), (37, 52, 2), (39, 0, 15)], // soil to fertilizer
-                    vec![(49, 53, 8), (0, 11, 42), (42, 0, 7), (57, 7, 4)], // fertilizer to water
-                    vec![(88, 18, 7), (18, 25, 70)],             // water to light
-                    vec![(45, 77, 23), (81, 45, 19), (68, 64, 13)], // light to temperature
-                    vec![(0, 69, 1), (1, 0, 69)],                // temperature to humidity
-                    vec![(60, 56, 37), (56, 93, 4)],             // humidity to location
-                ],
-            }
-        );
+        assert_eq!(almanac, almanac_example());
 
         Ok(())
     }

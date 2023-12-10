@@ -1,7 +1,6 @@
 use regex::Regex;
 
 use crate::error::Result;
-
 pub struct Solution;
 
 impl Solution {
@@ -39,7 +38,6 @@ fn numbers(line: &str) -> Result<Vec<i32>> {
 
 fn gen_seq(input: Vec<i32>, capture: fn(&Vec<i32>) -> i32) -> Vec<i32> {
     let mut captures = vec![];
-
     let mut curr = input;
     loop {
         curr = curr

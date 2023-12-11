@@ -1,11 +1,110 @@
-use regex::Regex;
-
 use crate::error::Result;
 pub struct Solution;
 
+#[derive(Debug, PartialEq, Eq, Hash)]
+enum Direction {
+    Left,
+    Right,
+    Down,
+    Up,
+}
+
+type Point = (usize, usize);
+type PointDir = (Point, Direction, usize);
+
+fn compatibility_dir(dir: &Direction) -> &'static str {
+    match dir {
+        Direction::Left => "-LF",
+        Direction::Right => "J-7",
+        Direction::Down => "L|J",
+        Direction::Up => "F|7",
+    }
+}
+
 impl Solution {
     pub fn part_1(input: &str) -> Result<i32> {
-        Ok(1)
+        let grid = gridify(input);
+        let start = 'S';
+        let n = grid.len();
+        let m = grid[0].len();
+        let mut numbered_grid = vec![vec![n * m + 1; m]; n];
+
+        let mut start_point: (usize, usize) = (0, 0);
+
+        let mut max_distance = 0;
+
+        for i in 0..n {
+            for j in 0..m {
+                if grid[i][j] == start {
+                    start_point.0 = i;
+                    start_point.1 = j;
+
+                    numbered_grid[i][j] = 0;
+                    break;
+                }
+            }
+        }
+
+        let mut stack = vec![
+            maybe_point(Direction::Up, start_point, n, m, 1),
+            maybe_point(Direction::Down, start_point, n, m, 1),
+            maybe_point(Direction::Left, start_point, n, m, 1),
+            maybe_point(Direction::Right, start_point, n, m, 1),
+        ]
+        .into_iter()
+        .flatten()
+        .collect::<Vec<PointDir>>();
+
+        while !stack.is_empty() {
+            let (point, dir, distance): PointDir = stack.pop().unwrap();
+            let mut distance = distance;
+            let item = grid[point.0][point.1];
+
+            if compatibility_dir(&dir).contains(item) {
+                distance = numbered_grid[point.0][point.1].min(distance);
+
+                numbered_grid[point.0][point.1] = distance;
+                max_distance = max_distance.max(distance);
+
+                let up = || maybe_point(Direction::Up, point, n, m, distance + 1);
+                let down = || maybe_point(Direction::Down, point, n, m, distance + 1);
+                let left = || maybe_point(Direction::Left, point, n, m, distance + 1);
+                let right = || maybe_point(Direction::Right, point, n, m, distance + 1);
+
+                let maybe_next_point = match dir {
+                    Direction::Left => match item {
+                        'F' => down(),
+                        '-' => left(),
+                        'L' => up(),
+                        _ => panic!("shouldn't match this arm"),
+                    },
+                    Direction::Right => match item {
+                        'J' => up(),
+                        '-' => right(),
+                        '7' => down(),
+                        _ => panic!("shouldn't match this arm"),
+                    },
+                    Direction::Down => match item {
+                        'L' => right(),
+                        '|' => down(),
+                        'J' => left(),
+                        _ => panic!("shouldn't match this arm"),
+                    },
+                    Direction::Up => match item {
+                        'F' => right(),
+                        '|' => up(),
+                        '7' => left(),
+                        _ => panic!("shouldn't match this arm"),
+                    },
+                };
+
+                if let Some(next_point) = maybe_next_point {
+                    stack.push(next_point);
+                }
+            }
+        }
+
+        Ok((max_distance + 1) as i32 / 2)
     }
 
     pub fn part_2(input: &str) -> Result<i32> {
@@ -13,28 +112,89 @@ impl Solution {
     }
 }
 
-fn numbers(line: &str) -> Result<Vec<i32>> {
-    let regex = Regex::new(r"([-\d]+)").unwrap();
+fn maybe_point(
+    next_direction: Direction,
+    curr_point: (usize, usize),
+    n: usize,
+    m: usize,
+    distance: usize,
+) -> Option<PointDir> {
+    match next_direction {
+        Direction::Left => {
+            if curr_point.1 > 0 {
+                let point: PointDir = ((curr_point.0, curr_point.1 - 1), Direction::Left, distance);
+                Some(point)
+            } else {
+                None
+            }
+        }
+        Direction::Right => {
+            if curr_point.1 < m - 1 {
+                let point: PointDir =
+                    ((curr_point.0, curr_point.1 + 1), Direction::Right, distance);
 
-    let result = regex
-        .find_iter(line)
-        .flat_map(|x| x.as_str().parse::<i32>())
-        .collect::<Vec<i32>>();
-
-    Ok(result)
+                Some(point)
+            } else {
+                None
+            }
+        }
+        Direction::Down => {
+            if curr_point.0 < n - 1 {
+                let point = ((curr_point.0 + 1, curr_point.1), next_direction, distance);
+                Some(point)
+            } else {
+                None
+            }
+        }
+        Direction::Up => {
+            if curr_point.0 > 0 {
+                Some(((curr_point.0 - 1, curr_point.1), next_direction, distance))
+            } else {
+                None
+            }
+        }
+    }
 }
 
+fn gridify(input: &str) -> Vec<Vec<char>> {
+    input
+        .lines()
+        .map(|l| l.trim())
+        .filter(|l| !l.is_empty())
+        .map(|x| x.chars().collect::<Vec<char>>())
+        .collect()
+}
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
     fn example() -> String {
-        r"0 3 6 9 12 15
-        1 3 6 10 15 21
-        10 13 16 21 30 45
+        r"
+        7-F7-
+        .FJ|7
+        SJLL7
+        |F--J
+        LJ.LJ
         "
         .to_string()
+    }
+
+    #[test]
+    fn test_input_into_matrix_char() -> Result<()> {
+        let input = r"-L|F7
+        7S-7|
+        L|7||";
+
+        let expected_grid = vec![
+            vec!['-', 'L', '|', 'F', '7'],
+            vec!['7', 'S', '-', '7', '|'],
+            vec!['L', '|', '7', '|', '|'],
+        ];
+
+        assert_eq!(gridify(input), expected_grid);
+
+        Ok(())
     }
 
     #[test]
@@ -48,7 +208,7 @@ mod tests {
 
     #[test]
     fn test_solution_part_1_from_example() -> Result<()> {
-        let expected = 114;
+        let expected = 8;
         let input = example();
         assert_eq!(Solution::part_1(&input)?, expected);
 

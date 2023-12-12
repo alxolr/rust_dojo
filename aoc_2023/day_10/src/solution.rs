@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use crate::error::Result;
 pub struct Solution;
 
@@ -22,16 +24,14 @@ fn compatibility_dir(dir: &Direction) -> &'static str {
 }
 
 impl Solution {
-    pub fn part_1(input: &str) -> Result<i32> {
-        let grid = gridify(input);
+    pub fn process(grid: &Vec<Vec<char>>, n: usize, m: usize) -> (usize, HashSet<Point>) {
         let start = 'S';
-        let n = grid.len();
-        let m = grid[0].len();
-        let mut numbered_grid = vec![vec![n * m + 1; m]; n];
 
+        let mut numbered_grid = vec![vec![n * m + 1; m]; n];
         let mut start_point: (usize, usize) = (0, 0);
 
         let mut max_distance = 0;
+        let mut cycle_path: HashSet<Point> = HashSet::new();
 
         for i in 0..n {
             for j in 0..m {
@@ -44,6 +44,8 @@ impl Solution {
                 }
             }
         }
+
+        cycle_path.insert(start_point);
 
         let mut stack = vec![
             maybe_point(Direction::Up, start_point, n, m, 1),
@@ -61,8 +63,8 @@ impl Solution {
             let item = grid[point.0][point.1];
 
             if compatibility_dir(&dir).contains(item) {
+                cycle_path.insert(point);
                 distance = numbered_grid[point.0][point.1].min(distance);
-
                 numbered_grid[point.0][point.1] = distance;
                 max_distance = max_distance.max(distance);
 
@@ -104,11 +106,167 @@ impl Solution {
             }
         }
 
+        (max_distance, cycle_path)
+    }
+
+    pub fn part_1(input: &str) -> Result<i32> {
+        let grid = gridify(input);
+        let n = grid.len();
+        let m = grid[0].len();
+        let (max_distance, _) = Solution::process(&grid, n, m);
+
         Ok((max_distance + 1) as i32 / 2)
     }
 
     pub fn part_2(input: &str) -> Result<i32> {
-        Ok(1)
+        let grid = gridify(input);
+        let mut debug_grid = grid.clone();
+
+
+        let n = grid.len();
+        let m = grid[0].len();
+        let (_, cycle_path) = Solution::process(&grid, n, m);
+
+        let mut count_tiles = 0;
+
+        for i in 0..n {
+            for j in 0..m {
+                if cycle_path.contains(&(i, j)) {
+                    debug_grid[i][j] = match grid[i][j] {
+                        'F' => '┌',
+                        'J' => '┘',
+                        '7' => '┐',
+                        'L' => '└',
+                        '-' => '─',
+                        '|' => '│',
+                        c => c,
+                    }
+                }
+
+                if grid[i][j] == '.' {
+                    let is_bound = is_bound(Direction::Up, (i, j), &grid, &cycle_path, n, m)
+                        && is_bound(Direction::Down, (i, j), &grid, &cycle_path, n, m)
+                        && is_bound(Direction::Left, (i, j), &grid, &cycle_path, n, m)
+                        && is_bound(Direction::Right, (i, j), &grid, &cycle_path, n, m);
+
+                    if is_bound {
+                        count_tiles += 1;
+
+                        debug_grid[i][j] = 'I';
+                    } else {
+                        debug_grid[i][j] = 'O';
+                    }
+                }
+            }
+        }
+
+        for i in 0..n {
+            println!("{}", debug_grid[i].iter().collect::<String>());
+        }
+
+        Ok(count_tiles)
+    }
+}
+
+fn is_bound(
+    dir: Direction,
+    point: Point,
+    grid: &Vec<Vec<char>>,
+    cycle_path: &HashSet<Point>,
+    n: usize,
+    m: usize,
+) -> bool {
+    let (i, j) = point;
+
+    match dir {
+        Direction::Left => {
+            let mut is_bound = false;
+
+            let mut mj = j;
+            loop {
+                if mj > 0 {
+                    mj -= 1;
+
+                    if grid[i][mj] != '.' {
+                        if cycle_path.contains(&(i, mj)) {
+                            is_bound = true;
+                        }
+
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
+
+            is_bound
+        }
+        Direction::Right => {
+            let mut is_bound = false;
+
+            let mut mj = j;
+            loop {
+                if mj < m - 1 {
+                    mj += 1;
+
+                    if grid[i][mj] != '.' {
+                        if cycle_path.contains(&(i, mj)) {
+                            is_bound = true;
+                        }
+
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
+
+            is_bound
+        }
+        Direction::Down => {
+            let mut is_bound = false;
+
+            let mut mi = i;
+            loop {
+                if mi < n - 1 {
+                    mi += 1;
+
+                    if grid[mi][j] != '.' {
+                        if cycle_path.contains(&(mi, j)) {
+                            is_bound = true;
+                        }
+
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
+
+            is_bound
+        }
+        Direction::Up => {
+            let mut is_bound = false;
+
+            let mut mi = i;
+            loop {
+                if mi > 0 {
+                    mi -= 1;
+
+                    if grid[mi][j] != '.' {
+                        if cycle_path.contains(&(mi, j)) {
+                            is_bound = true;
+                        }
+
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
+
+            is_bound
+        }
     }
 }
 
@@ -180,6 +338,22 @@ mod tests {
         .to_string()
     }
 
+    fn part_two_example() -> String {
+        r"
+        .F----7F7F7F7F-7....
+        .|F--7||||||||FJ....
+        .||.FJ||||||||L7....
+        FJL7L7LJLJ||LJ.L-7..
+        L--J.L7...LJS7F-7L7.
+        ....F-J..F7FJ|L7L7L7
+        ....L7.F7||L7|.L7L7|
+        .....|FJLJ|FJ|F7|.LJ
+        ....FJL-7.||.||||...
+        ....L---J.LJ.LJLJ...
+        "
+        .to_string()
+    }
+
     #[test]
     fn test_input_into_matrix_char() -> Result<()> {
         let input = r"-L|F7
@@ -199,8 +373,8 @@ mod tests {
 
     #[test]
     fn test_solution_part_2_from_example() -> Result<()> {
-        let expected = 2;
-        let input = example();
+        let expected = 4;
+        let input = part_two_example();
         assert_eq!(Solution::part_2(&input)?, expected);
 
         Ok(())

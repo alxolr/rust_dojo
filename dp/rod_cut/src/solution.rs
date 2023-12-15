@@ -11,13 +11,13 @@ pub fn memo_hits() -> &'static Mutex<usize> {
     MEMO_HITS.get_or_init(|| Mutex::new(0))
 }
 
-pub fn rod_cut(n: i64, prices: &Vec<i64>) -> i64 {
+pub fn rod_cut(n: i64, prices: &[i64]) -> i64 {
     let mut memo = HashMap::new();
 
-    _rod_cut(&mut memo, n, prices)
+    _rod_cut_memo(&mut memo, n, prices)
 }
 
-fn _rod_cut(memo: &mut HashMap<i64, i64>, n: i64, prices: &Vec<i64>) -> i64 {
+fn _rod_cut_memo(memo: &mut HashMap<i64, i64>, n: i64, prices: &[i64]) -> i64 {
     if let Some(result) = memo.get(&n) {
         *memo_hits().lock().unwrap() += 1;
 
@@ -29,7 +29,7 @@ fn _rod_cut(memo: &mut HashMap<i64, i64>, n: i64, prices: &Vec<i64>) -> i64 {
     }
 
     let profit = (1..=n).fold(-1, |acc, i| {
-        acc.max(prices.get(i as usize - 1).unwrap_or(&0) + _rod_cut(memo, n - i, prices))
+        acc.max(prices.get(i as usize - 1).unwrap_or(&0) + _rod_cut_memo(memo, n - i, prices))
     });
 
     memo.insert(n, profit);
@@ -45,7 +45,7 @@ mod tests {
     fn it_rod_cut_ok() {
         let prices = vec![1, 5, 8, 9, 10, 17, 17, 20, 24, 30];
         let n = 8;
-        let result = rod_cut(n, prices);
+        let result = rod_cut(n, &prices);
 
         assert_eq!(result, 22);
     }

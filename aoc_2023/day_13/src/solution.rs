@@ -4,18 +4,16 @@ pub struct Solution;
 type Grid = Vec<Vec<char>>;
 
 impl Solution {
-    pub fn process(input: &str) -> Result<i64> {
+    pub fn part_1(input: &str) -> Result<i64> {
         let result = grids(input).iter().map(find_mirror).sum::<i64>();
 
         Ok(result)
     }
 
-    pub fn part_1(input: &str) -> Result<i64> {
-        Solution::process(input)
-    }
-
     pub fn part_2(input: &str) -> Result<i64> {
-        Solution::process(input)
+        let result = grids(input).iter().map(find_mirror_p2).sum::<i64>();
+
+        Ok(result)
     }
 }
 
@@ -27,6 +25,71 @@ fn diff(first: &Vec<char>, second: &Vec<char>) -> usize {
 
         acc
     })
+}
+
+fn find_mirror_p2(grid: &Grid) -> i64 {
+    if let Some(rows) = maybe_rows_p2(grid) {
+        return 100 * (rows as i64 + 1);
+    }
+
+    if let Some(cols) = maybe_cols_p2(grid) {
+        return cols as i64 + 1;
+    }
+
+    panic!("Mirror not found");
+}
+
+fn maybe_cols_p2(grid: &Grid) -> Option<usize> {
+    let m = grid[0].len();
+    // the key to the problem is that we know that there is exactly one smudge, only
+
+    'mirror: for (left, right) in (0..m - 1).zip(1..m) {
+        let mut diff_total = 0;
+
+        diff_total += diff(&collect(&grid, left), &collect(&grid, right));
+
+        if diff_total <= 1 {
+            for dist in 1..=min_to_bound_dist(left, right, m - 1) {
+                diff_total += diff(&collect(grid, left - dist), &collect(grid, right + dist));
+
+                if diff_total > 1 {
+                    continue 'mirror;
+                }
+            }
+        }
+
+        if diff_total == 1 {
+            return Some(left);
+        }
+    }
+
+    None
+}
+
+fn maybe_rows_p2(grid: &Grid) -> Option<usize> {
+    let n = grid.len();
+
+    'mirror: for (up, down) in (0..n - 1).zip(1..n) {
+        let mut diff_total = 0;
+
+        diff_total += diff(&grid[up], &grid[down]);
+
+        if diff_total <= 1 {
+            for dist in 1..=min_to_bound_dist(up, down, n - 1) {
+                diff_total += diff(&grid[up - dist], &grid[down + dist]);
+
+                if diff_total > 1 {
+                    continue 'mirror;
+                }
+            }
+
+            if diff_total == 1 {
+                return Some(up);
+            }
+        }
+    }
+
+    None
 }
 
 fn maybe_rows(grid: &Grid) -> Option<usize> {

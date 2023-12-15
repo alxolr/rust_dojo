@@ -4,14 +4,27 @@ pub struct Solution;
 type Grid = Vec<Vec<char>>;
 
 impl Solution {
+    pub fn process(
+        input: &str,
+        rows_fn: fn(&Grid) -> Option<usize>,
+        cols_fn: fn(&Grid) -> Option<usize>,
+    ) -> Result<i64> {
+        let result = grids(input)
+            .iter()
+            .map(|grid| find_mirror(grid, rows_fn, cols_fn))
+            .sum::<i64>();
+
+        Ok(result)
+    }
+
     pub fn part_1(input: &str) -> Result<i64> {
-        let result = grids(input).iter().map(find_mirror).sum::<i64>();
+        let result = Solution::process(input, maybe_rows, maybe_cols)?;
 
         Ok(result)
     }
 
     pub fn part_2(input: &str) -> Result<i64> {
-        let result = grids(input).iter().map(find_mirror_p2).sum::<i64>();
+        let result = Solution::process(input, maybe_rows_p2, maybe_cols_p2)?;
 
         Ok(result)
     }
@@ -25,18 +38,6 @@ fn diff(first: &Vec<char>, second: &Vec<char>) -> usize {
 
         acc
     })
-}
-
-fn find_mirror_p2(grid: &Grid) -> i64 {
-    if let Some(rows) = maybe_rows_p2(grid) {
-        return 100 * (rows as i64 + 1);
-    }
-
-    if let Some(cols) = maybe_cols_p2(grid) {
-        return cols as i64 + 1;
-    }
-
-    panic!("Mirror not found");
 }
 
 fn maybe_cols_p2(grid: &Grid) -> Option<usize> {
@@ -136,12 +137,16 @@ fn min_to_bound_dist(up: usize, down: usize, n: usize) -> usize {
     (n - down).min(up - 0)
 }
 
-fn find_mirror(grid: &Grid) -> i64 {
-    if let Some(rows) = maybe_rows(grid) {
+fn find_mirror(
+    grid: &Grid,
+    rows_fn: fn(&Grid) -> Option<usize>,
+    cols_fn: fn(&Grid) -> Option<usize>,
+) -> i64 {
+    if let Some(rows) = rows_fn(grid) {
         return 100 * (rows as i64 + 1);
     }
 
-    if let Some(cols) = maybe_cols(grid) {
+    if let Some(cols) = cols_fn(grid) {
         return cols as i64 + 1;
     }
 

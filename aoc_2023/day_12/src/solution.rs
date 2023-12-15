@@ -1,20 +1,13 @@
-use std::{collections::VecDeque, ops::DerefMut};
-
 use rayon::iter::{ParallelBridge, ParallelIterator};
 
-use crate::{binary_tree::BinaryTree, error::Result};
+use crate::error::Result;
 pub struct Solution;
 
 impl Solution {
     pub fn part_1(input: &str) -> Result<i64> {
         let structure = structure(input);
 
-        let result = structure
-            .into_iter()
-            .enumerate()
-            .par_bridge()
-            .map(|(idx, line)| combos(line))
-            .sum();
+        let result = structure.into_iter().map(|line| combos(line)).sum();
 
         Ok(result)
     }
@@ -25,11 +18,13 @@ impl Solution {
         let result = structure
             .into_iter()
             .enumerate()
-            .par_bridge()
-            .map(|(_, line)| {
+            .map(|(idx, line)| {
                 let (line, groups) = unfold(line);
                 let line = (line.as_str(), groups.as_str());
-                combos(line)
+                let combos = combos(line);
+                println!("  ✓ line {} combos {}", idx + 1, combos);
+
+                combos
             })
             .sum();
 
@@ -51,104 +46,122 @@ fn structure(input: &str) -> Vec<(&str, &str)> {
         .collect()
 }
 
-fn insert(node: Option<&mut Box<BinaryTree>>, val: char) {
-    if let Some(node) = node {
-        if node.left.is_none() && node.right.is_none() {
-            match val {
-                '?' => {
-                    node.deref_mut().left = Some(BinaryTree::new('#'));
-                    node.deref_mut().right = Some(BinaryTree::new('.'));
-                }
-                c => node.deref_mut().left = Some(BinaryTree::new(c)),
-            }
-        } else {
-            insert(node.left.as_mut(), val);
-            insert(node.right.as_mut(), val);
-        }
-    }
-}
-
 fn combos(line: (&str, &str)) -> i64 {
     let (data, groups) = line;
+    let mut data = data.to_string();
 
-    let mut root = BinaryTree::new(' ');
-
-    for ch in data.chars() {
-        insert(Some(&mut root), ch);
-    }
-
-    let valid_paths = valid_paths(root, groups, data.len());
+    let valid_paths = valid_paths(&mut data, groups);
 
     valid_paths
 }
 
-fn valid_paths(root: Box<BinaryTree>, groups: &str, size: usize) -> i64 {
-    let mut paths = 0;
+fn valid_paths(data: &mut str, groups: &str) -> i64 {
+    let size = data.len();
 
-    let mut nav_queue: VecDeque<(Box<BinaryTree>, String)> = VecDeque::new();
+    let groups = groups
+        .split(",")
+        .map(|it| it.parse::<i32>().unwrap())
+        .collect::<Vec<i32>>();
 
-    nav_queue.push_front((root, "".to_string()));
+    let mut solutions = vec!["".to_string()];
 
-    while !nav_queue.is_empty() {
-        let (node, result) = nav_queue.pop_back().unwrap();
+    for ch in data.chars() {
+        let mut step_solutions = vec![];
 
-        let counted_groups = count_groups(&result, size == result.len());
+        for solution in solutions {
+            match ch {
+                '?' => {
+                    let next_str = format!("{}{}", solution, '#');
 
-        if counted_groups == groups {
-            paths += 1;
-        } else if groups.starts_with(&counted_groups) {
-            // continue left and right
+                    if has_potential(&next_str, &groups, size) {
+                        step_solutions.push(next_str);
+                    }
 
-            if let Some(left) = node.left {
-                let mut str = result.clone();
-                str.push(left.value);
+                    let next_str = format!("{}{}", solution, '.');
 
-                let tuple = (left, str);
-                nav_queue.push_front(tuple);
-            }
+                    if has_potential(&next_str, &groups, size) {
+                        step_solutions.push(next_str);
+                    }
+                }
 
-            if let Some(right) = node.right {
-                let mut str = result.clone();
-                str.push(right.value);
-
-                let tuple = (right, str);
-                nav_queue.push_front(tuple);
+                c => {
+                    let next_str = format!("{}{}", solution, c);
+                    if has_potential(&next_str, &groups, size) {
+                        step_solutions.push(next_str);
+                    }
+                }
             }
         }
+
+        solutions = step_solutions;
     }
 
-    paths
+    solutions.len() as i64
 }
 
-fn count_groups(s: &str, is_final: bool) -> String {
-    let mut valid_groups = vec![];
+fn has_potential(next_str: &str, groups: &Vec<i32>, size: usize) -> bool {
+    let is_final = next_str.len() == size;
+    let (clear_groups_count, unclear_count) = count_groups(&next_str, size);
 
+    if is_final {
+        return clear_groups_count == *groups;
+    }
+
+    let clear_count_equal = groups
+        .iter()
+        .zip(clear_groups_count.iter())
+        .all(|(g, c)| g == c);
+
+    let mut first_unclear_is_less = true;
+
+    if let Some(first_unclear) = groups.iter().skip(clear_groups_count.len()).next() {
+        first_unclear_is_less = unclear_count <= *first_unclear;
+    }
+
+    let mut min_chars_need = groups
+        .iter()
+        .skip(clear_groups_count.len())
+        .map(|it| it + 1)
+        .sum::<i32>();
+
+    if min_chars_need > 0 {
+        min_chars_need -= 1;
+    }
+
+    let remaining_chars = size - next_str.len();
+    let has_enough_chars = remaining_chars >= (min_chars_need - unclear_count) as usize;
+
+    clear_count_equal && first_unclear_is_less && has_enough_chars
+}
+
+fn count_groups(s: &str, size: usize) -> (Vec<i32>, i32) {
+    let is_final = s.len() == size;
+    let mut found_groups: Vec<i32> = vec![];
+    let mut unclear_groups_count = 0;
     let mut stack = vec![];
+
     for ch in s.chars() {
         match ch {
-            '#' => {
-                stack.push('#');
-            }
+            '#' => stack.push('#'),
             _ => {
                 if !stack.is_empty() {
-                    valid_groups.push(stack.iter().collect::<String>());
-                    stack = vec![];
+                    found_groups.push(stack.len() as i32);
                 }
+
+                stack = vec![];
             }
         }
     }
 
     if is_final {
         if !stack.is_empty() {
-            valid_groups.push(stack.iter().collect::<String>());
+            found_groups.push(stack.len() as i32);
         }
+    } else {
+        unclear_groups_count = stack.len() as i32;
     }
 
-    valid_groups
-        .iter()
-        .map(|x| x.len().to_string())
-        .collect::<Vec<_>>()
-        .join(",")
+    (found_groups, unclear_groups_count)
 }
 
 fn unfold<'a, 'b>(line: (&'a str, &'b str)) -> (String, String) {
@@ -179,6 +192,13 @@ mod tests {
         .to_string()
     }
 
+    fn example_two() -> String {
+        r"
+        .??..??...?##. 1,1,3
+        "
+        .to_string()
+    }
+
     #[test]
     fn test_structure_ok() -> Result<()> {
         let input = r"
@@ -196,9 +216,9 @@ mod tests {
     #[test]
     fn test_combos_ok() -> Result<()> {
         let scenarios = vec![
-            (("???.###", "1,1,3"), 1),
-            ((".??..??...?##", "1,1,3"), 4),
-            (("?#?#?#?#?#?#?#?", "1,3,1,6"), 1),
+            // (("???.###", "1,1,3"), 1),
+            // ((".??..??...?##", "1,1,3"), 4),
+            // (("?#?#?#?#?#?#?#?", "1,3,1,6"), 1),
             (("????.#...#...", "4,1,1"), 1),
             (("????.######..#####.", "1,6,5"), 4),
             (("?###????????", "3,2,1"), 10),

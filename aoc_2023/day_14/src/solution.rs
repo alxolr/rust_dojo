@@ -1,9 +1,16 @@
 use crate::error::Result;
 pub struct Solution;
 
+enum Dir {
+    Row,
+    Col,
+}
+
 impl Solution {
     pub fn part_1(input: &str) -> Result<i64> {
-        let mut grid = grid(input);
+        let mut total: i64 = 0;
+        let grid = grid(input);
+
         let n = grid.len();
         let m = grid[0].len();
 
@@ -17,19 +24,116 @@ impl Solution {
 
             let slide = slide(&line);
 
-            // put the back the slided string in reversed order
-            // maybe make sense to count the tolal right away
-            // maybe we don't even need to mutate it at all
+            let counts = slide.iter().enumerate().fold(0, |mut acc, (idx, it)| {
+                if it == &'O' {
+                    acc += idx as i64 + 1;
+                }
+
+                acc
+            });
+
+            total += counts
         }
 
-        Ok(1)
+        Ok(total)
     }
 
     // vec![]
 
-    pub fn part_2(input: &str) -> Result<i32> {
-        Ok(1)
+    pub fn part_2(input: &str) -> Result<i64> {
+        let mut grid = grid(input);
+
+        let rows = grid.len();
+        let cols = grid[0].len();
+
+        for cycle in 1..=3 {
+            slide_north(&mut grid, rows, cols);
+            slide_west(&mut grid, rows);
+            slide_south(&mut grid, rows, cols);
+            slide_east(&mut grid, rows);
+
+            println!("Cycle {cycle}");
+            for row in 0..rows {
+                println!("{}", grid[row].iter().collect::<String>())
+            }
+        }
+
+        let count = count_load(&grid);
+
+        Ok(count as i64)
     }
+}
+
+fn slide_south(grid: &mut Vec<Vec<char>>, rows: usize, cols: usize) {
+    for col in 0..cols {
+        let line = grid.iter().take(rows).map(|it| it[col]).collect::<String>();
+
+        let line = slide(&line);
+        update_grid(grid, line, Dir::Col, col)
+    }
+}
+
+fn slide_north(grid: &mut Vec<Vec<char>>, rows: usize, cols: usize) {
+    for col in 0..cols {
+        let line = grid
+            .iter()
+            .take(rows)
+            .map(|it| it[col])
+            .rev()
+            .collect::<String>();
+
+        let mut line = slide(&line);
+        line.reverse();
+
+        update_grid(grid, line, Dir::Col, col)
+    }
+}
+
+fn slide_west(grid: &mut Vec<Vec<char>>, rows: usize) {
+    for row in 0..rows {
+        let line: String = grid[row].iter().rev().collect();
+        let mut line = slide(&line);
+        line.reverse();
+
+        update_grid(grid, line, Dir::Row, row);
+    }
+}
+
+fn slide_east(grid: &mut Vec<Vec<char>>, rows: usize) {
+    for row in 0..rows {
+        let line: String = grid[row].iter().collect();
+        let line = slide(&line);
+
+        update_grid(grid, line, Dir::Row, row);
+    }
+}
+
+fn update_grid(grid: &mut Vec<Vec<char>>, line: Vec<char>, dir: Dir, idx: usize) {
+    match dir {
+        Dir::Row => {
+            grid[idx] = line;
+        }
+        Dir::Col => {
+            let n = grid.len();
+
+            for i in 0..n {
+                grid[i][idx] = line[i]
+            }
+        }
+    }
+}
+
+fn count_load(grid: &Vec<Vec<char>>) -> usize {
+    let grid_len = grid.len();
+
+    grid.iter()
+        .enumerate()
+        .map(|(idx, it)| {
+            let rocks = it.iter().filter(|x| *x == &'O').count();
+
+            (grid_len - idx) * rocks
+        })
+        .sum()
 }
 
 fn grid(s: &str) -> Vec<Vec<char>> {
@@ -74,9 +178,8 @@ mod tests {
         ..O..#O..O
         .......O..
         #....###..
-        #OO..#....
-        "#
-        .to_string()
+        #OO..#...."#
+            .to_string()
     }
 
     #[test]
@@ -112,13 +215,13 @@ mod tests {
         Ok(())
     }
 
-    // #[test]
-    // fn test_solution_part_2_from_example() -> Result<()> {
-    //     let expected = 145;
-    //     let input = example();
+    #[test]
+    fn test_solution_part_2_from_example() -> Result<()> {
+        let expected = 136;
+        let input = example();
 
-    //     assert_eq!(Solution::part_2(&input)?, expected);
+        assert_eq!(Solution::part_2(&input)?, expected);
 
-    //     Ok(())
-    // }
+        Ok(())
+    }
 }

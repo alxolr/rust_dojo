@@ -1,3 +1,8 @@
+use std::{
+    collections::{hash_map::DefaultHasher, HashSet},
+    hash::{Hash, Hasher},
+};
+
 use crate::error::Result;
 pub struct Solution;
 
@@ -38,30 +43,88 @@ impl Solution {
         Ok(total)
     }
 
-    // vec![]
-
     pub fn part_2(input: &str) -> Result<i64> {
         let mut grid = grid(input);
 
         let rows = grid.len();
         let cols = grid[0].len();
 
-        for cycle in 1..=3 {
+        let mut list = vec![];
+        let mut start_cycle: usize = 0;
+        let mut cycle_len: usize = 0;
+
+        loop {
             slide_north(&mut grid, rows, cols);
             slide_west(&mut grid, rows);
             slide_south(&mut grid, rows, cols);
             slide_east(&mut grid, rows);
 
-            println!("Cycle {cycle}");
-            for row in 0..rows {
-                println!("{}", grid[row].iter().collect::<String>())
+            let count = count_load(&grid);
+            let hash = hash(&grid);
+
+            list.push((hash, count));
+
+            if let Some(cycle) = detect_cycle(&list) {
+                start_cycle = cycle.0;
+                cycle_len = cycle.1;
+
+                break;
             }
         }
 
-        let count = count_load(&grid);
+        let skip = start_cycle;
+        let cycles = 1_000_000_000 - skip; // will loop in cycles
+        let full_cycles = cycles / cycle_len;
 
-        Ok(count as i64)
+        let remainder = cycles - (full_cycles * cycle_len);
+        let index = start_cycle + remainder - 1;
+
+        
+        Ok(list[index].1 as i64)
     }
+}
+
+/// The function will detect the cycle in the provided list using the hash value in the touple
+/// It will return a Nonef if there are no cycles
+/// or the start of the cycle and the distance in case
+fn detect_cycle(list: &[(u64, usize)]) -> Option<(usize, usize)> {
+    let mut visited = HashSet::new();
+    let mut cycle_item = None;
+
+    for (hash, _) in list.iter() {
+        if !visited.contains(hash) {
+            visited.insert(*hash);
+        } else {
+            // we found the repeating cycle;
+            cycle_item = Some(*hash);
+            break;
+        }
+    }
+
+    if let Some(hash) = cycle_item {
+        // find the start of the cycle and the distance
+        let [first, second]: [usize; 2] = list
+            .iter()
+            .enumerate()
+            .filter(|(_, (h, _))| h == &hash)
+            .take(2)
+            .map(|(idx, _)| idx)
+            .collect::<Vec<_>>()
+            .try_into()
+            .unwrap();
+
+        // start of the cycle and the distance
+        Some((first, second - first))
+    } else {
+        None
+    }
+}
+
+fn hash(grid: &Vec<Vec<char>>) -> u64 {
+    let mut hasher = DefaultHasher::new();
+    grid.hash(&mut hasher);
+
+    hasher.finish()
 }
 
 fn slide_south(grid: &mut Vec<Vec<char>>, rows: usize, cols: usize) {
@@ -141,7 +204,7 @@ fn grid(s: &str) -> Vec<Vec<char>> {
 }
 
 fn slide(line: &str) -> Vec<char> {
-    line.split("#")
+    line.split('#')
         .map(slide_rocks)
         .collect::<Vec<_>>()
         .join("#")
@@ -152,7 +215,7 @@ fn slide(line: &str) -> Vec<char> {
 // in this rock group we will have only soil and rocks nothing else
 // the algorithm will count the rocks and generate a string filled with
 // soil and the number of rocks
-fn slide_rocks<'a>(s: &str) -> String {
+fn slide_rocks(s: &str) -> String {
     let n = s.len();
 
     let rocks_len = s.chars().filter(|c| c == &'O').count();
@@ -217,7 +280,7 @@ mod tests {
 
     #[test]
     fn test_solution_part_2_from_example() -> Result<()> {
-        let expected = 136;
+        let expected = 64;
         let input = example();
 
         assert_eq!(Solution::part_2(&input)?, expected);

@@ -1,2 +1,2 @@
 pub mod convert_array_into_2d_with_conditions;
-
+pub mod number_of_laser_beams_in_a_bank;

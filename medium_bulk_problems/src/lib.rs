@@ -1,4 +1,5 @@
+pub mod amount_of_time_for_binary_tree_to_be_infected;
 pub mod convert_array_into_2d_with_conditions;
-pub mod number_of_laser_beams_in_a_bank;
-pub mod minimum_number_of_operations_to_make_array_empty;
 pub mod longest_increasing_subsequence;
+pub mod minimum_number_of_operations_to_make_array_empty;
+pub mod number_of_laser_beams_in_a_bank;

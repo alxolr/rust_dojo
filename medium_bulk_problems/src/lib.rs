@@ -3,4 +3,6 @@ pub mod convert_array_into_2d_with_conditions;
 pub mod longest_increasing_subsequence;
 pub mod maximum_difference_between_node_and_ancestor;
 pub mod minimum_number_of_operations_to_make_array_empty;
+pub mod minimum_number_of_steps_to_make_two_strings_anagram;
 pub mod number_of_laser_beams_in_a_bank;
+pub mod players_with_zero_or_one_loses;

@@ -6,3 +6,4 @@ pub mod range_sum_of_bst;
 pub mod remove_duplicates_from_sorted_array;
 pub mod roman_to_integer;
 pub mod leaf_similar_binary_trees;
+pub mod recover_string;

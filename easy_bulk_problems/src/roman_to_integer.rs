@@ -51,8 +51,6 @@ mod tests {
             ("MCMXCIV".to_string(), 1994),
         ];
 
-        "test".to_string().split_whitespace()
-
         scenarios
             .into_iter()
             .enumerate()

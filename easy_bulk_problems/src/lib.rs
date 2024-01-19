@@ -7,3 +7,6 @@ pub mod remove_duplicates_from_sorted_array;
 pub mod roman_to_integer;
 pub mod leaf_similar_binary_trees;
 pub mod recover_string;
+pub mod count_the_digits_to_divide_a_number;
+pub mod cells_in_range;
+pub mod decode_the_message;

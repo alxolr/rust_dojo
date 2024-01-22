@@ -48,7 +48,7 @@ mod tests {
                 4173,
             ),
         ];
-
+c
         scenarios
             .into_iter()
             .enumerate()

@@ -5,11 +5,11 @@ impl Solution {
         let mut freq = vec![0; 26];
 
         for byte in s.as_bytes() {
-            freq[(byte - 97) as usize] += 1;
+            freq[(byte - b'a') as usize] += 1;
         }
 
         for (idx, ch) in s.as_bytes().iter().enumerate() {
-            if freq[(ch - 97) as usize] == 1 {
+            if freq[(ch - b'a') as usize] == 1 {
                 return idx as i32;
             }
         }

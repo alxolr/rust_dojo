@@ -2,6 +2,7 @@ pub struct Solution;
 
 pub fn dfs(idx: usize, sols: &mut Vec<Vec<i32>>, nums: &[i32]) {
     let mut level_sols = vec![];
+    
     for sol in sols.iter() {
         let mut temp = sol.clone();
         temp.push(nums[idx]);

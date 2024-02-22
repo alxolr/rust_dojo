@@ -2,26 +2,26 @@ pub struct Solution;
 
 impl Solution {
     pub fn find_judge(n: i32, trust: Vec<Vec<i32>>) -> i32 {
-        if trust.len() == 0 && n == 1 {
-            return 1;
-        }
+        let relations = trust.iter().fold(vec![0; n as usize + 1], |mut acc, item| {
+            acc[item[0] as usize] -= 1;
+            acc[item[1] as usize] += 1;
 
-        let mut count = vec![0; n as usize + 1];
-        for person in trust.into_iter() {
-            count[person[0] as usize] -= 1;
-            count[person[1] as usize] += 1;
-        }
+            acc
+        });
 
-        for person in 0..count.len() {
-            if count[person] == n - 1 {
-                return person as i32;
-            }
-        }
-
-        -1
+        relations
+            .iter()
+            .enumerate()
+            .find_map(|(idx, val)| {
+                if *val == n - 1 {
+                    Some(idx as i32)
+                } else {
+                    None
+                }
+            })
+            .unwrap_or(-1)
     }
 }
-
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -2,20 +2,8 @@ use std::collections::HashSet;
 
 struct Solution;
 
-fn fibo(n: i32) -> i32 {
-    if n == 0 {
-        return 0;
-    }
-
-    if n == 1 {
-        return 1;
-    }
-
-    fibo(n - 1) + fibo(n - 2)
-}
-
 fn validate(range: &[char]) -> bool {
-    let digits = range
+    let digits: Vec<u32> = range
         .iter()
         .filter(|c| c.is_digit(10))
         .map(|x| x.to_digit(10).unwrap())
@@ -23,14 +11,14 @@ fn validate(range: &[char]) -> bool {
     let distinct_digits = digits.iter().collect::<HashSet<_>>();
 
     let size_check = distinct_digits.len() == digits.len();
-    let in_between = digits.iter().all(|x| x >= &1 && x <= &9);
+    let range_check = digits.iter().all(|x| x >= &1 && x <= &9);
 
-    size_check && in_between
+    size_check && range_check
 }
 
 impl Solution {
     pub fn is_valid_sudoku(board: Vec<Vec<char>>) -> bool {
-        let rows = board.len();
+        let rows: usize = board.len();
         let cols = board[0].len();
 
         if rows != 9 && cols != 9 {

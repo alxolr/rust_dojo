@@ -1,0 +1,9 @@
+workspace = { members = ["container_with_most_water_11"] }
+[package]
+name = "count_subarrays_where_max_elem_appears_at_least_k_times_2962"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]

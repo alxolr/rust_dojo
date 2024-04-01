@@ -1,6 +1,5 @@
-workspace = { members = ["container_with_most_water_11", "valid_paranthesis_20"] }
 [package]
-name = "count_subarrays_where_max_elem_appears_at_least_k_times_2962"
+name = "trapping_rain_watter_42"
 version = "0.1.0"
 edition = "2021"
 

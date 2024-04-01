@@ -9,3 +9,7 @@ version = "0.1.0"
 [[package]]
 name = "count_subarrays_where_max_elem_appears_at_least_k_times_2962"
 version = "0.1.0"
+
+[[package]]
+name = "valid_paranthesis_20"
+version = "0.1.0"

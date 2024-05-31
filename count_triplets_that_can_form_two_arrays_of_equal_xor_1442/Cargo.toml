@@ -1,0 +1,8 @@
+[package]
+name = "count_triplets_that_can_form_two_arrays_of_equal_xor_1442"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]

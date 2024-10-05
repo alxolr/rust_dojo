@@ -1,0 +1,6 @@
+[package]
+name = "permutation_in_string_567"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]

@@ -1,19 +1,16 @@
 pub type Result<T> = core::result::Result<T, Error>;
+use derive_more::From;
 
-#[derive(Debug)]
+#[derive(Debug, From)]
 pub enum Error {
     FailReadFile(std::io::Error),
 }
 
-impl From<std::io::Error> for Error {
-    fn from(value: std::io::Error) -> Self {
-        Self::FailReadFile(value)
-    }
-}
-
-impl core::fmt::Display for Error {
-    fn fmt(&self, fmt: &mut core::fmt::Formatter) -> core::result::Result<(), core::fmt::Error> {
-        write!(fmt, "{self}")
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        match self {
+            Error::FailReadFile(e) => write!(f, "{:?}", e),
+        }
     }
 }
 

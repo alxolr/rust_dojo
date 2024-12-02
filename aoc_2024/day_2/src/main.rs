@@ -6,16 +6,19 @@ use std::{fs, time::Instant};
 use error::Result;
 use solution::Solution;
 
+const NAME: &str = "Day 2: Red-Nosed Reports";
+
 fn main() -> Result<()> {
     let input = load_from_file("./data/input")?;
+    println!("{}", NAME);
 
     let now = Instant::now();
     let part_1_sol = Solution::part_1(&input)?;
-    println!("part 1 = {} ({:.2?})", part_1_sol, now.elapsed());
+    println!("  part 1 = {} ({:.2?})", part_1_sol, now.elapsed());
 
     let now = Instant::now();
     let part_2_sol = Solution::part_2(&input)?;
-    println!("part 2 = {} ({:.2?})", part_2_sol, now.elapsed());
+    println!("  part 2 = {} ({:.2?})", part_2_sol, now.elapsed());
 
     Ok(())
 }

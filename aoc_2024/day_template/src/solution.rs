@@ -16,16 +16,16 @@ mod tests {
     use super::*;
     #[test]
     fn test_part_1() -> Result<()> {
-        let input = "";
-        assert_eq!(super::Solution::part_1(input)?, 0);
+        let input = r#""#;
+        assert_eq!(Solution::part_1(input)?, 0);
 
         Ok(())
     }
 
     #[test]
     fn test_part_2() -> Result<()> {
-        let input = "";
-        assert_eq!(super::Solution::part_2(input)?, 0);
+        let input = r#""#;
+        assert_eq!(Solution::part_2(input)?, 0);
 
         Ok(())
     }

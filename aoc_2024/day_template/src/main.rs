@@ -6,8 +6,11 @@ use std::{fs, time::Instant};
 use error::Result;
 use solution::Solution;
 
+const TITLE: &'static str = "Day: Title";
+
 fn main() -> Result<()> {
     let input = load_from_file("./data/input")?;
+    println!("{}", TITLE);
 
     let now = Instant::now();
     let part_1_sol = Solution::part_1(&input)?;

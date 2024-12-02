@@ -2,13 +2,18 @@ use crate::error::Result;
 pub struct Solution;
 
 impl Solution {
+    // O(n*m)
     pub fn part_1(input: &str) -> Result<i32> {
         let extract_lines: Vec<Vec<i32>> = extract_lines(input);
-        let safe_count = extract_lines.iter().filter(|line| is_safe(line)).count() as i32;
+        let safe_count = extract_lines
+            .iter()
+            .filter(|line: &&Vec<i32>| is_safe(line))
+            .count() as i32;
 
         Ok(safe_count)
     }
 
+    // O(n*m^2) -> O(n*m)
     pub fn part_2(input: &str) -> Result<i32> {
         let lines: Vec<Vec<i32>> = extract_lines(input);
         let mut safe_count = 0;
@@ -19,7 +24,6 @@ impl Solution {
             } else {
                 for idx in 0..line.len() {
                     let mut line_clone = line.clone();
-
                     line_clone.remove(idx);
 
                     if is_safe(&line_clone) {

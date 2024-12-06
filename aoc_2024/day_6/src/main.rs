@@ -20,6 +20,7 @@ fn main() -> Result<()> {
     let now = Instant::now();
     let part_2_sol = Solution::part_2(&input)?;
     println!("part 2 = {} ({:.2?})", part_2_sol, now.elapsed());
+    assert_eq!(part_2_sol, 1604);
 
     Ok(())
 }

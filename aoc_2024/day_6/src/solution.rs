@@ -4,6 +4,9 @@ use crate::error::Result;
 pub struct Solution;
 
 type Cell = (usize, usize);
+type DirectedCell = (usize, usize, Direction);
+
+#[derive(Eq, PartialEq, Hash, Clone)]
 enum Direction {
     Up,
     Right,
@@ -29,7 +32,7 @@ impl Solution {
         // Set the initial direction of the guardian to be Up
         let mut current_direction = Direction::Up;
 
-        // Simulate the traversal
+        // Simulate the guardian movements
         let (mut row, mut col) = start_position;
         loop {
             visited_cells.insert((row, col));
@@ -38,7 +41,7 @@ impl Solution {
                 Direction::Up => {
                     if row.checked_sub(1).is_some() {
                         match grid[row - 1][col] {
-                            '.' => row -= 1,                   // Move up
+                            '.' => row -= 1,                           // Move up
                             _ => current_direction = Direction::Right, // Change direction
                         }
                     } else {
@@ -49,7 +52,7 @@ impl Solution {
                 Direction::Right => {
                     if col + 1 < grid[0].len() {
                         match grid[row][col + 1] {
-                            '.' => col += 1,                  // Move Right
+                            '.' => col += 1,                          // Move Right
                             _ => current_direction = Direction::Down, // change direction
                         }
                     } else {
@@ -60,7 +63,7 @@ impl Solution {
                 Direction::Down => {
                     if row + 1 < grid.len() {
                         match grid[row + 1][col] {
-                            '.' => row += 1,                  // Move down
+                            '.' => row += 1,                          // Move down
                             _ => current_direction = Direction::Left, // change direction
                         }
                     } else {
@@ -71,7 +74,7 @@ impl Solution {
                 Direction::Left => {
                     if col.checked_sub(1).is_some() {
                         match grid[row][col - 1] {
-                            '.' => col -= 1,                // Move up
+                            '.' => col -= 1,                        // Move up
                             _ => current_direction = Direction::Up, // Change direction
                         }
                     } else {
@@ -85,8 +88,94 @@ impl Solution {
         Ok(visited_cells.len() as i32)
     }
 
-    pub fn part_2(_input: &str) -> Result<i32> {
-        Ok(0)
+    pub fn part_2(input: &str) -> Result<i32> {
+        // It's painful even to write this but for part 2 will try a brute force solution
+        // For cycle detection we will try a hashset with the visited cell as in part 1 but we will
+        // add as well the direction, once we got into the same cell and same direction
+        // we will imply that this is a cycle.
+        let mut grid = load_grid(input);
+
+        let start_position = guardian_start_position(&grid);
+        // Remove the guardian from the grid
+        grid[start_position.0][start_position.1] = '.';
+
+        let mut cycles = 0;
+
+        for row in 0..grid.len() {
+            for col in 0..grid[0].len() {
+                if grid[row][col] == '#' {
+                    continue;
+                }
+
+                grid[row][col] = '#'; // Try to add here an obstacle
+
+                let mut visited_cells = HashSet::<DirectedCell>::new();
+                let (mut acting_row, mut acting_col) = start_position;
+                let mut current_direction = Direction::Up;
+                loop {
+                    // Check the cycle
+                    if visited_cells.contains(&(acting_row, acting_col, current_direction.clone()))
+                    {
+                        // the cycle is found
+                        cycles += 1;
+                        break;
+                    } else {
+                        visited_cells.insert((acting_row, acting_col, current_direction.clone()));
+                    }
+
+                    match current_direction {
+                        Direction::Up => {
+                            if acting_row.checked_sub(1).is_some() {
+                                match grid[acting_row - 1][acting_col] {
+                                    '.' => acting_row -= 1,                    // Move up
+                                    _ => current_direction = Direction::Right, // Change direction
+                                }
+                            } else {
+                                // This is the exit from the grid means we are out
+                                break;
+                            }
+                        }
+                        Direction::Right => {
+                            if acting_col + 1 < grid[0].len() {
+                                match grid[acting_row][acting_col + 1] {
+                                    '.' => acting_col += 1,                   // Move Right
+                                    _ => current_direction = Direction::Down, // change direction
+                                }
+                            } else {
+                                // Exit from the grid
+                                break;
+                            }
+                        }
+                        Direction::Down => {
+                            if acting_row + 1 < grid.len() {
+                                match grid[acting_row + 1][acting_col] {
+                                    '.' => acting_row += 1,                   // Move down
+                                    _ => current_direction = Direction::Left, // change direction
+                                }
+                            } else {
+                                // Exit from the grid
+                                break;
+                            }
+                        }
+                        Direction::Left => {
+                            if acting_col.checked_sub(1).is_some() {
+                                match grid[acting_row][acting_col - 1] {
+                                    '.' => acting_col -= 1,                 // Move up
+                                    _ => current_direction = Direction::Up, // Change direction
+                                }
+                            } else {
+                                // This is the exit from the grid means we are out
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                grid[row][col] = '.'; // Return back the dot for the next iterations
+            }
+        }
+
+        Ok(cycles)
     }
 }
 
@@ -132,8 +221,17 @@ mod tests {
 
     #[test]
     fn test_part_2() -> Result<()> {
-        let input = r#""#;
-        assert_eq!(Solution::part_2(input)?, 0);
+        let input = r#"....#.....
+.........#
+..........
+..#.......
+.......#..
+..........
+.#..^.....
+........#.
+#.........
+......#..."#;
+        assert_eq!(Solution::part_2(input)?, 6);
 
         Ok(())
     }

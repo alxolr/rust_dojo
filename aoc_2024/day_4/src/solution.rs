@@ -28,7 +28,7 @@ impl Solution {
         // Count occurrences in diagonals (bottom-up)
         for row in 0..rows {
             let line: String = (0..=row).map(|i| grid[row - i][i]).collect();
-            let count_line = count_xmas(&line)?;
+            let count_line: usize = count_xmas(&line)?;
             count += count_line;
         }
 

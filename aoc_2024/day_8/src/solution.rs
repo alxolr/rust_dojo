@@ -38,7 +38,6 @@ impl Solution {
                         let [left, right] = pair[..] else {
                             panic!("wrong definition")
                         };
-
                         // Compute the antinodes there should be only two for each pair
                         // Step one I guess we need to calculate the distance between the pair
                         let direction_vector = get_direction_vector(left, right);
@@ -47,7 +46,7 @@ impl Solution {
                             plus_point(right, &direction_vector),
                         ]
                         .into_iter()
-                        .filter(|pos| is_bound(pos.0, pos.1, &grid))
+                        .filter(|point| is_bound(&point, &grid).is_some())
                     })
             })
             .collect();
@@ -94,7 +93,7 @@ impl Solution {
                     let mut plus_antinodes = vec![];
                     let mut plus_antinode: (isize, isize) = plus_point(right, &direction_point);
 
-                    while is_bound(plus_antinode.0, plus_antinode.1, &grid) {
+                    while is_bound(&plus_antinode, &grid).is_some() {
                         plus_antinodes.push(plus_antinode);
                         plus_antinode = plus_point(
                             &(plus_antinode.0 as usize, plus_antinode.1 as usize),
@@ -105,7 +104,7 @@ impl Solution {
                     let mut minus_antinodes = vec![];
                     let mut minus_antinode: (isize, isize) = minus_point(left, &direction_point);
 
-                    while is_bound(minus_antinode.0, minus_antinode.1, &grid) {
+                    while is_bound(&minus_antinode, &grid).is_some() {
                         minus_antinodes.push(minus_antinode);
                         minus_antinode = minus_point(
                             &(minus_antinode.0 as usize, minus_antinode.1 as usize),
@@ -116,7 +115,7 @@ impl Solution {
                     plus_antinodes
                         .iter()
                         .chain(minus_antinodes.iter())
-                        .filter(|pos| is_bound(pos.0, pos.1, &grid))
+                        .filter(|point| is_bound(&point, &grid).is_some())
                         .for_each(|pos| {
                             locations.insert(*pos);
                         });
@@ -152,8 +151,14 @@ fn get_direction_vector(point_1: &Position, point_2: &Position) -> (isize, isize
     )
 }
 
-fn is_bound(row: isize, col: isize, grid: &[Vec<char>]) -> bool {
-    row >= 0 && row < grid.len() as isize && col >= 0 && col < grid[0].len() as isize
+fn is_bound<'a>(point: &'a (isize, isize), grid: &[Vec<char>]) -> Option<&'a (isize, isize)> {
+    let (row, col) = point;
+
+    if row >= &0 && row < &(grid.len() as isize) && col >= &0 && col < &(grid[0].len() as isize) {
+        Some(point)
+    } else {
+        None
+    }
 }
 
 #[cfg(test)]

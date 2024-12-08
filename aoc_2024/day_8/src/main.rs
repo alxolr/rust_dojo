@@ -6,7 +6,7 @@ use std::{fs, time::Instant};
 use error::Result;
 use solution::Solution;
 
-const TITLE: &'static str = "Day: Title";
+const TITLE: &'static str = "Day 8: Resonant Collinearity";
 
 fn main() -> Result<()> {
     let input = load_from_file("./data/input")?;

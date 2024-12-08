@@ -1,5 +1,8 @@
 use core::panic;
-use std::collections::{HashMap, HashSet};
+use std::{
+    collections::{HashMap, HashSet},
+    iter::successors,
+};
 
 use itertools::Itertools;
 
@@ -9,8 +12,17 @@ pub struct Solution;
 type Position = (usize, usize);
 
 impl Solution {
-    pub fn part_1(input: &str) -> Result<i32> {
+    pub fn common<'a, F>(input: &str, apply_strategy: F) -> Result<i32>
+    where
+        F: Fn(
+            &(usize, usize), // left point
+            &(usize, usize), // right point
+            &(isize, isize), // direction vector point
+            &(isize, isize), // grid size (rows, cols)
+        ) -> Vec<(isize, isize)>,
+    {
         let grid: Vec<Vec<char>> = load_grid(input)?;
+        let grid_size = (grid.len() as isize, grid[0].len() as isize);
 
         // Extract a map of all antenas, group them by frequency and store their positions
         let frequency_map = grid
@@ -26,7 +38,8 @@ impl Solution {
                 acc
             });
 
-        let locations: HashSet<(isize, isize)> = frequency_map
+        // We use a hashset to get the distinct number of positions
+        let positions: HashSet<(isize, isize)> = frequency_map
             .values()
             .flat_map(|positions| {
                 positions
@@ -38,102 +51,69 @@ impl Solution {
                         let [left, right] = pair[..] else {
                             panic!("wrong definition")
                         };
-                        // Compute the antinodes there should be only two for each pair
-                        // Step one I guess we need to calculate the distance between the pair
-                        let direction_vector = get_direction_vector(left, right);
-                        [
-                            minus_point(left, &direction_vector),
-                            plus_point(right, &direction_vector),
-                        ]
-                        .into_iter()
-                        .filter(|point| is_bound(&point, &grid).is_some())
+
+                        // Compute the direction vector to be able to generate the points on the same lines
+                        let direction_point: (isize, isize) = get_direction_point(left, right);
+
+                        // The strategy itself depends on the part of the problem, but it will return a Vec of positions
+                        apply_strategy(left, right, &direction_point, &grid_size)
                     })
             })
             .collect();
 
-        Ok(locations.len() as i32)
+        Ok(positions.len() as i32)
+    }
+
+    pub fn part_1(input: &str) -> Result<i32> {
+        Self::common(input, |left, right, direction_point, grid_size| {
+            [
+                // get the point above
+                minus_point(&cast(left), direction_point),
+                //get the point bellow
+                plus_point(&cast(right), direction_point),
+            ]
+            .into_iter()
+            // filter only the points that are in bounds
+            .filter(|point| is_in_bounds(&point, grid_size).is_some())
+            .collect()
+        })
     }
 
     pub fn part_2(input: &str) -> Result<i32> {
-        let grid: Vec<Vec<char>> = load_grid(input)?;
+        Self::common(input, |left, right, direction, grid_size| {
+            [cast(left), cast(right)] // Add current left and right point to the positions
+                .into_iter()
+                .chain(successors(
+                    // Super fancy way to write a while loop as iterator, the idea we loop until we are not in bounds
+                    is_in_bounds(&plus_point(&cast(right), &direction), grid_size),
+                    |prev| {
+                        let next_point = plus_point(prev, direction);
 
-        // Extract a map of all antenas, group them by frequency and store their positions
-        let frequency_map = grid
-            .iter()
-            .enumerate()
-            .fold(HashMap::new(), |mut acc, (row, line)| {
-                line.iter()
-                    .enumerate()
-                    .filter(|(_, ch)| *ch != &'.')
-                    .for_each(|(col, ch)| {
-                        acc.entry(ch).or_insert(vec![]).push((row, col));
-                    });
-                acc
-            });
+                        is_in_bounds(&next_point, grid_size)
+                    },
+                ))
+                .chain(successors(
+                    // We do a similar way for the minus direaction
+                    is_in_bounds(&minus_point(&cast(left), &direction), grid_size),
+                    |prev| {
+                        let next_point = minus_point(prev, direction);
 
-        let mut locations = HashSet::<(isize, isize)>::new();
-
-        frequency_map.values().for_each(|positions| {
-            positions
-                .iter()
-                // This is a fancy way to do all combinations of pairs of antenas
-                // an iterator alternative to do two for loops
-                .combinations(2)
-                .for_each(|pair| {
-                    let [left, right] = pair[..] else {
-                        panic!("wrong definition")
-                    };
-
-                    locations.insert((left.0 as isize, left.1 as isize));
-                    locations.insert((right.0 as isize, right.1 as isize));
-
-                    // The starting point is to calcualte the direction vector
-                    let direction_point: (isize, isize) = get_direction_vector(left, right);
-
-                    let mut plus_antinodes = vec![];
-                    let mut plus_antinode: (isize, isize) = plus_point(right, &direction_point);
-
-                    while is_bound(&plus_antinode, &grid).is_some() {
-                        plus_antinodes.push(plus_antinode);
-                        plus_antinode = plus_point(
-                            &(plus_antinode.0 as usize, plus_antinode.1 as usize),
-                            &direction_point,
-                        );
-                    }
-
-                    let mut minus_antinodes = vec![];
-                    let mut minus_antinode: (isize, isize) = minus_point(left, &direction_point);
-
-                    while is_bound(&minus_antinode, &grid).is_some() {
-                        minus_antinodes.push(minus_antinode);
-                        minus_antinode = minus_point(
-                            &(minus_antinode.0 as usize, minus_antinode.1 as usize),
-                            &direction_point,
-                        );
-                    }
-
-                    plus_antinodes
-                        .iter()
-                        .chain(minus_antinodes.iter())
-                        .filter(|point| is_bound(&point, &grid).is_some())
-                        .for_each(|pos| {
-                            locations.insert(*pos);
-                        });
-                });
-        });
-
-        Ok(locations.len() as i32)
+                        is_in_bounds(&next_point, grid_size)
+                    },
+                ))
+                .collect()
+        })
     }
 }
 
-fn plus_point(point: &Position, direction_point: &(isize, isize)) -> (isize, isize) {
+fn plus_point(point: &(isize, isize), direction_point: &(isize, isize)) -> (isize, isize) {
     (
         point.0 as isize + direction_point.0,
         point.1 as isize + direction_point.1,
     )
 }
 
-fn minus_point(point: &Position, direction_point: &(isize, isize)) -> (isize, isize) {
+fn minus_point(point: &(isize, isize), direction_point: &(isize, isize)) -> (isize, isize) {
     (
         point.0 as isize - direction_point.0,
         point.1 as isize - direction_point.1,
@@ -144,18 +124,23 @@ fn load_grid(input: &str) -> Result<Vec<Vec<char>>> {
     Ok(input.lines().map(|line| line.chars().collect()).collect())
 }
 
-fn get_direction_vector(point_1: &Position, point_2: &Position) -> (isize, isize) {
+fn get_direction_point(point_1: &Position, point_2: &Position) -> (isize, isize) {
     (
         point_2.0 as isize - point_1.0 as isize,
         point_2.1 as isize - point_1.1 as isize,
     )
 }
 
-fn is_bound<'a>(point: &'a (isize, isize), grid: &[Vec<char>]) -> Option<&'a (isize, isize)> {
-    let (row, col) = point;
+fn cast(point: &(usize, usize)) -> (isize, isize) {
+    (point.0 as isize, point.1 as isize)
+}
 
-    if row >= &0 && row < &(grid.len() as isize) && col >= &0 && col < &(grid[0].len() as isize) {
-        Some(point)
+fn is_in_bounds(point: &(isize, isize), grid: &(isize, isize)) -> Option<(isize, isize)> {
+    let (row, col) = point;
+    let (rows, cols) = grid;
+
+    if row >= &0 && row < rows && col >= &0 && col < cols {
+        Some((*row, *col))
     } else {
         None
     }

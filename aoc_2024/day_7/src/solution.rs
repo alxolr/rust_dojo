@@ -40,7 +40,7 @@ fn is_valid_part_1(target_value: i64, operands: &Vec<i64>) -> bool {
     let get_accumulated_values = |index: usize, accumulated_value: i64, operand_value| {
         // We return an options of possible next values cause we need to handle overflows
         let possible_accumulated_values = vec![
-            // For the check options, we get the already accumulated and the current operand value
+            // For the add operator, we get the already accumulated and the current operand value
             accumulated_value.checked_add(operand_value),
             // For the multiplication, we need to check for the first one to not have multiplication by zero
             // So if it's the first one we just return the current operand value

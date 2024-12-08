@@ -26,33 +26,31 @@ impl Solution {
                 acc
             });
 
-        let mut locations = HashSet::<(isize, isize)>::new();
+        let locations: HashSet<(isize, isize)> = frequency_map
+            .values()
+            .flat_map(|positions| {
+                positions
+                    .iter()
+                    // This is a fancy way to do all combinations of pairs of antenas
+                    // an iterator alternative to do two for loops
+                    .combinations(2)
+                    .flat_map(|pair| {
+                        let [left, right] = pair[..] else {
+                            panic!("wrong definition")
+                        };
 
-        frequency_map.values().for_each(|positions| {
-            positions
-                .iter()
-                // This is a fancy way to do all combinations of pairs of antenas
-                // an iterator alternative to do two for loops
-                .combinations(2)
-                .for_each(|pair| {
-                    let [left, right] = pair[..] else {
-                        panic!("wrong definition")
-                    };
-
-                    // Compute the antinodes there should be only two for each pair
-                    // Step one I guess we need to calculate the distance between the pair
-                    let direction_vector = get_direction_vector(left, right);
-                    [
-                        minus_point(left, &direction_vector),
-                        plus_point(right, &direction_vector),
-                    ]
-                    .into_iter()
-                    .filter(|pos| is_bound(pos.0, pos.1, &grid))
-                    .for_each(|pos| {
-                        locations.insert(pos);
-                    });
-                });
-        });
+                        // Compute the antinodes there should be only two for each pair
+                        // Step one I guess we need to calculate the distance between the pair
+                        let direction_vector = get_direction_vector(left, right);
+                        [
+                            minus_point(left, &direction_vector),
+                            plus_point(right, &direction_vector),
+                        ]
+                        .into_iter()
+                        .filter(|pos| is_bound(pos.0, pos.1, &grid))
+                    })
+            })
+            .collect();
 
         Ok(locations.len() as i32)
     }
@@ -94,8 +92,7 @@ impl Solution {
                     let direction_point: (isize, isize) = get_direction_vector(left, right);
 
                     let mut plus_antinodes = vec![];
-                    let mut plus_antinode: (isize, isize) =
-                        plus_point(right, &direction_point);
+                    let mut plus_antinode: (isize, isize) = plus_point(right, &direction_point);
 
                     while is_bound(plus_antinode.0, plus_antinode.1, &grid) {
                         plus_antinodes.push(plus_antinode);
@@ -106,8 +103,7 @@ impl Solution {
                     }
 
                     let mut minus_antinodes = vec![];
-                    let mut minus_antinode: (isize, isize) =
-                        minus_point(left, &direction_point);
+                    let mut minus_antinode: (isize, isize) = minus_point(left, &direction_point);
 
                     while is_bound(minus_antinode.0, minus_antinode.1, &grid) {
                         minus_antinodes.push(minus_antinode);

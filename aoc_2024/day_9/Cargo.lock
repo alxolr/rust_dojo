@@ -3,7 +3,7 @@
 version = 3
 
 [[package]]
-name = "day_template"
+name = "day_9"
 version = "0.1.0"
 dependencies = [
  "derive_more",

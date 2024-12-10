@@ -3,6 +3,7 @@ use std::collections::VecDeque;
 use crate::error::Result;
 pub struct Solution;
 
+
 impl Solution {
     pub fn part_1(input: &str) -> Result<i64> {
         // Main idea I will be using a two queues one for the free spaces and the other for the file blocks
@@ -11,7 +12,7 @@ impl Solution {
         let mut current_file_id = 0;
 
         let mut available_spaces = VecDeque::new();
-        let mut file_positions = VecDeque::new();
+        let mut file_positions: VecDeque<(i64, i64)> = VecDeque::new();
 
         for (index, digit) in input.chars().flat_map(|x| x.to_digit(10)).enumerate() {
             let is_file = index % 2 == 0;
@@ -68,7 +69,7 @@ impl Solution {
                 current_position += block_count as u64;
                 current_file_id += 1;
             } else {
-                available_spaces.push_front((current_position, block_count));
+                available_spaces.push_back((current_position, block_count));
                 current_position += block_count as u64;
             }
         }
@@ -79,12 +80,11 @@ impl Solution {
             // we know the current file start
             // we try to find a compatible block count in the block of memories
 
-            for (free_start_pos, free_block_count) in available_spaces.iter_mut().rev() {
+            for (free_start_pos, free_block_count) in available_spaces.iter_mut() {
                 if block_count <= free_block_count {
                     // we may have a potential match
                     if *free_start_pos < *start_pos {
                         // do the swap
-
                         *start_pos = *free_start_pos;
 
                         *free_block_count -= *block_count;

@@ -1,10 +1,9 @@
-use std::collections::HashMap;
-
 use regex::Regex;
 
 use crate::error::Result;
 pub struct Solution;
 
+type Game = ((i64, i64), (i64, i64), (i64, i64));
 impl Solution {
     pub fn part_1(input: &str) -> Result<i64> {
         let games = parse_input(input);
@@ -31,20 +30,26 @@ impl Solution {
 }
 
 fn solve_game(a: (i64, i64), b: (i64, i64), sum: (i64, i64)) -> Option<i64> {
-    let b_count = (a.1 * sum.0 - a.0 * sum.1) / (a.1 * b.0 - a.0 * b.1);
-    if b_count < 0 || (a.1 * sum.0 - a.0 * sum.1) % (a.1 * b.0 - a.0 * b.1) != 0 {
+    // The solution is a math problem wher you need to find
+    // a.0 * a_clicks + b.0 * y_clicks = sum.0
+    // a.1 * a_clicks + b.1 * y_clicks = sum.1
+    // the idea is that we substitue x from first equation and solve it in the second
+    // to find out a_clicks, and b_clicks
+
+    let b_clicks = (a.1 * sum.0 - a.0 * sum.1) / (a.1 * b.0 - a.0 * b.1);
+    if b_clicks < 0 || (a.1 * sum.0 - a.0 * sum.1) % (a.1 * b.0 - a.0 * b.1) != 0 {
         return None;
     }
 
-    let a_count = (sum.1 - b.1 * b_count) / a.1;
-    if a_count < 0 || (sum.1 - b.1 * b_count) % a.1 != 0 {
+    let a_clicks = (sum.1 - b.1 * b_clicks) / a.1;
+    if a_clicks < 0 || (sum.1 - b.1 * b_clicks) % a.1 != 0 {
         return None;
     }
 
-    Some((a_count * 3) + b_count)
+    Some((a_clicks * 3) + b_clicks)
 }
 
-fn parse_input(input: &str) -> Vec<((i64, i64), (i64, i64), (i64, i64))> {
+fn parse_input(input: &str) -> Vec<Game> {
     input
         .split("\n\n")
         .map(|block| {

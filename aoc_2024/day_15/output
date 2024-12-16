@@ -1,0 +1,170 @@
+
+running 2 tests
+test solution::tests::test_part_2 ... ok
+test solution::tests::test_part_1 ... FAILED
+
+failures:
+
+---- solution::tests::test_part_1 stdout ----
+
+Movement <
+########
+#..O.O.#
+##@.O..#
+#...O..#
+#.#.O..#
+#...O..#
+#......#
+########
+
+Movement ^
+########
+#.@O.O.#
+##..O..#
+#...O..#
+#.#.O..#
+#...O..#
+#......#
+########
+
+Movement ^
+########
+#.@O.O.#
+##..O..#
+#...O..#
+#.#.O..#
+#...O..#
+#......#
+########
+
+Movement >
+########
+#..@.O.#
+##..O..#
+#...O..#
+#.#.O..#
+#...O..#
+#......#
+########
+
+Movement >
+########
+#...@O.#
+##..O..#
+#...O..#
+#.#.O..#
+#...O..#
+#......#
+########
+
+Movement >
+########
+#....@.#
+##..O..#
+#...O..#
+#.#.O..#
+#...O..#
+#......#
+########
+
+Movement v
+########
+#......#
+##..O@.#
+#...O..#
+#.#.O..#
+#...O..#
+#......#
+########
+
+Movement v
+########
+#......#
+##..O..#
+#...O@.#
+#.#.O..#
+#...O..#
+#......#
+########
+
+Movement <
+########
+#......#
+##..O..#
+#...@..#
+#.#.O..#
+#...O..#
+#......#
+########
+
+Movement v
+########
+#......#
+##..O..#
+#......#
+#.#....#
+#...@..#
+#......#
+########
+
+Movement >
+########
+#......#
+##..O..#
+#......#
+#.#....#
+#....@.#
+#......#
+########
+
+Movement >
+########
+#......#
+##..O..#
+#......#
+#.#....#
+#.....@#
+#......#
+########
+
+Movement v
+########
+#......#
+##..O..#
+#......#
+#.#....#
+#......#
+#.....@#
+########
+
+Movement <
+########
+#......#
+##..O..#
+#......#
+#.#....#
+#......#
+#....@.#
+########
+
+Movement <
+########
+#......#
+##..O..#
+#......#
+#.#....#
+#......#
+#...@..#
+########
+thread 'solution::tests::test_part_1' panicked at src/solution.rs:204:9:
+assertion `left == right` failed
+  left: 0
+ right: 10092
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    solution::tests::test_part_1
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

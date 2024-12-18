@@ -1,0 +1,36 @@
+
+running 2 tests
+test solution::tests::test_part_2 ... FAILED
+test solution::tests::test_part_1 ... ok
+
+failures:
+
+---- solution::tests::test_part_2 stdout ----
+   #      #      #      #      #      #      #      #      #      #      #      #      #      #      #   
+   #    5016   6017   6018   6019   6020   6021   6022     #      .      .      .      .    7036     #   
+   #    5015     #    7017     #      #      #    7023     #      .      #      #      #    7035     #   
+   #    5014   6015   6016   6017   6018     #    7024     #      .    8021   7020     #    7034     #   
+   #    5013     #      #      #    7019     #      #      #      #      #    7019     #    7033     #   
+   #    5012     #    3010     #    6020   6019   6018   6017   5016   6017   6018     #    7032     #   
+   #    5011     #    3009     #      #      #      #      #    5015     #      #      #    7031     #   
+   #    4010   4009   3008   4009   3010   4011   4012   4013   4014   4015   4016     #    7030     #   
+   #      #      #    3007     #    3009     #      #      #      #      #    5017     #    7029     #   
+   #    1004   2005   2006     #    3008   4009   4010   4011   4012     #    5018     #    7028     #   
+   #    1003     #    3005     #    3007     #      #      #    5013     #    5019     #    7027     #   
+   #    1002   2003   2004   2005   2006     #    5012   6013   5014     #    5020     #    7026     #   
+   #    1001     #      #      #    3007     #    5011     #    5013     #    5021     #    7025     #   
+   #      0      1      2      #    3008   4009   4010   4011   4012     #    5022   6023   6024     #   
+   #      #      #      #      #      #      #      #      #      #      #      #      #      #      #   
+
+thread 'solution::tests::test_part_2' panicked at src/solution.rs:284:9:
+assertion `left == right` failed
+  left: 0
+ right: 45
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    solution::tests::test_part_2
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

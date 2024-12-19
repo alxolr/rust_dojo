@@ -20,7 +20,7 @@ impl Solution {
         let (patterns, designs) = parse_input(input)?;
         let mut memo: HashMap<(&str, &str), i64> = HashMap::new();
 
-        let possible_designs = designs
+        let sum_of_design_combos = designs
             .into_iter()
             .map(|design| {
                 let combos = count_combos(&mut memo, design, &patterns);
@@ -29,11 +29,12 @@ impl Solution {
             })
             .sum();
 
-        Ok(possible_designs)
+        Ok(sum_of_design_combos)
     }
 }
 
 // We try all combinations and once we got the result we add it to the sum
+// all this 'a,'b','c are lifetimes for rust to understand how long the value will live, in the hashmap
 fn count_combos_recursive<'a, 'b, 'c>(
     memo: &mut HashMap<(&'a str, &'b str), i64>,
     curr: &'a str,

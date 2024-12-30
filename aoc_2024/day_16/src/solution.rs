@@ -45,7 +45,6 @@ fn min_cost_path(
     }
 
     dp[start.0][start.1] = 0; // start the cost at zero
-    prev[start.0][start.1].push_back(None); // there are no previous nodes for start
 
     let mut pq = BinaryHeap::new();
     pq.push(Activity {
@@ -140,18 +139,7 @@ fn apply_actions(
                         if new_cost < dp[new_x as usize][new_y as usize] {
                             prev[new_x][new_y].clear();
                         }
-                        
-                        let (prev_row, prev_rest) = prev.split_at_mut(row + 1);
-                        let prev_row = &mut prev_row[row];
-                        let prev_col = &mut prev_row[col];
-                        let prev_new = &mut prev_rest[0][new_y];
-                        
-                        for p in prev_col.iter_mut() {
-                            prev_new.push_back(*p);
-                        }
-                        // add the new parents
-                        prev[new_x][new_y].push_back(Some((row as isize, col as isize)));
-                        // add new cost
+                                              // // add new cost
                         dp[new_x as usize][new_y as usize] = new_cost;
                         pq.push(Activity {
                             pos: (new_x, new_y),

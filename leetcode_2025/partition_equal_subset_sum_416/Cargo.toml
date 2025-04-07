@@ -1,0 +1,6 @@
+[package]
+name = "partition_equal_subset_sum_416"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]

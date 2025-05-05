@@ -1,0 +1,6 @@
+[package]
+name = "count_complete_subarrays_in_an_array_2799"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]

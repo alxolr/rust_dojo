@@ -1,0 +1,6 @@
+[package]
+name = "count_square_submatrices_with_square_one_1277"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]

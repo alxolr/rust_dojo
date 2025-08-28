@@ -1,35 +1,33 @@
-use std::collections::VecDeque;
+use std::collections::HashMap;
 
 impl Solution {
     pub fn sort_matrix(grid: Vec<Vec<i32>>) -> Vec<Vec<i32>> {
-        // gather the diagonals
         let mut grid = grid;
-        let grid_len = grid.len();
-
-        for row in (0..=grid_len - 1).rev() {
-            let mut values = vec![];
-            for col in 0..=grid_len - 1 - row {
-                values.push(grid[col + row][col]);
-            }
-            values.sort_by(|a, b| b.cmp(a)); // sort non increasing order;
-            let mut deque = VecDeque::from(values);
-
-            for col in 0..=grid_len - 1 - row {
-                grid[col + row][col] = deque.pop_front().unwrap_or_default();
+        // gather the diagonals
+        let mut diagonals: HashMap<i32, Vec<i32>> = HashMap::new();
+        for row in 0..grid.len() {
+            for col in 0..grid[0].len() {
+                let diagonal_key = row as i32 - col as i32;
+                diagonals
+                    .entry(diagonal_key)
+                    .or_insert(Vec::new())
+                    .push(grid[row][col]);
             }
         }
 
-        for col in (1..=grid_len - 1).rev() {
-            let mut values = vec![];
-            for row in 0..=grid_len - 1 - col {
-                values.push(grid[row][col + row]);
+        // Sort each diagonal: positive keys descending, negative keys ascending
+        for (key, values) in diagonals.iter_mut() {
+            if *key >= 0 {
+                values.sort_by(|a, b| b.cmp(a)); // descending
+            } else {
+                values.sort_by(|a, b| a.cmp(b)); // ascending
             }
+        }
 
-            values.sort(); // sort non increasing order;
-            let mut deque = VecDeque::from(values);
-
-            for row in 0..=grid_len - 1 - col {
-                grid[row][col + row] = deque.pop_front().unwrap_or_default();
+        for row in 0..grid.len() {
+            for col in 0..grid[0].len() {
+                let key = row as i32 - col as i32;
+                grid[row][col] = diagonals.get_mut(&key).unwrap().remove(0);
             }
         }
 

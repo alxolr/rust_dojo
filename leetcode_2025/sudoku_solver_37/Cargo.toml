@@ -1,0 +1,6 @@
+[package]
+name = "sudoku_solver_37"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]

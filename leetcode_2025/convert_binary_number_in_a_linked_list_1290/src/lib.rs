@@ -34,6 +34,25 @@ pub struct Solution;
 mod tests {
     use super::*;
 
+
+    #[test]
+    fn test_program() {
+        let s = "hello";
+        let is_vowel = |c: &char| -> bool {
+            matches!(c, 'a' | 'e' | 'i' | 'o' | 'u')
+        };
+
+        let count = s.chars().filter(is_vowel).count();
+
+        let has_vowels = if count == 0 {
+            false
+        } else {
+            true
+        };
+        
+        assert_eq!(has_vowels, true);
+    }
+
     #[test]
     fn it_works() {
         let linked_list = Some(Box::new(ListNode {

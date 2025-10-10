@@ -1,0 +1,16 @@
+{
+  "name": "taking_maximum_energy_from_the_mystic_dungeon_3147",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "keywords": ["leetcode", "algorithm", "javascript"],
+  "author": "",
+  "license": "ISC",
+  "description": "LeetCode 3147: Taking Maximum Energy from the Mystic Dungeon",
+  "devDependencies": {
+    "jest": "^29.0.0"
+  }
+}

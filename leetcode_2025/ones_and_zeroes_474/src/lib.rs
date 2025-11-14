@@ -7,26 +7,23 @@ impl Solution {
     }
 
     pub fn find_max_form(strs: Vec<String>, m: i32, n: i32) -> i32 {
-        let len = strs.len();
-        let mut dp = vec![vec![vec![0; (n + 1) as usize]; (m + 1) as usize]; len + 1];
+        let mut dp = vec![vec![0; (n + 1) as usize]; (m + 1) as usize];
 
-        for idx in (0..len).rev() {
-            let (zeros, ones) = Self::count_one_zeros(&strs[idx]);
+        for string in strs.iter() {
+            let (zeros, ones) = Self::count_one_zeros(string);
 
-            for zero_cap in 0..=m {
-                for one_cap in 0..=n {
-                    if zeros <= zero_cap && ones <= one_cap {
-                        let take = 1 + dp[idx + 1][(zero_cap - zeros) as usize][(one_cap - ones) as usize];
-                        let not_take = dp[idx + 1][zero_cap as usize][one_cap as usize];
-                        dp[idx][zero_cap as usize][one_cap as usize] = take.max(not_take);
-                    } else {
-                        dp[idx][zero_cap as usize][one_cap as usize] = dp[idx + 1][zero_cap as usize][one_cap as usize];
-                    }
+            // CRITICAL: Loop backwards through m and n!
+            for m_left in (zeros..=m).rev() {
+                for n_left in (ones..=n).rev() {
+                    dp[m_left as usize][n_left as usize] = i32::max(
+                        dp[m_left as usize][n_left as usize],                    // skip
+                        1 + dp[(m_left - zeros) as usize][(n_left - ones) as usize], // take
+                    );
                 }
             }
         }
 
-        dp[0][m as usize][n as usize]
+        dp[m as usize][n as usize]
     }
 }
 

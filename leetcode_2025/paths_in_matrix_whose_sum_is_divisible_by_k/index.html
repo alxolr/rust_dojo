@@ -1,0 +1,779 @@
+<html xmlns:o=3D'urn:schemas-microsoft-com:office:office'
+      xmlns:w=3D'urn:schemas-microsoft-com:office:word'
+      xmlns:v=3D'urn:schemas-microsoft-com:vml'
+      xmlns=3D'urn:w3-org-ns:HTML'>
+<head>
+    <meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dutf-8=
+">
+    <title>High-level requirements</title>
+    <!--[if gte mso 9]>
+    <xml>
+        <o:OfficeDocumentSettings>
+            <o:TargetScreenSize>1024x640</o:TargetScreenSize>
+            <o:PixelsPerInch>72</o:PixelsPerInch>
+            <o:AllowPNG/>
+        </o:OfficeDocumentSettings>
+        <w:WordDocument>
+            <w:View>Print</w:View>
+            <w:Zoom>90</w:Zoom>
+            <w:DoNotOptimizeForBrowser/>
+        </w:WordDocument>
+    </xml>
+    <![endif]-->
+    <style>
+                <!--
+        @page Section1 {
+            size: 8.5in 11.0in;
+            margin: 1.0in;
+            mso-header-margin: .5in;
+            mso-footer-margin: .5in;
+            mso-paper-source: 0;
+        }
+
+        table {
+            border: solid 1px;
+            border-collapse: collapse;
+        }
+
+        table td, table th {
+            border: solid 1px;
+            padding: 5px;
+        }
+
+        td {
+            page-break-inside: avoid;
+        }
+
+        tr {
+            page-break-after: avoid;
+        }
+
+        div.Section1 {
+            page: Section1;
+        }
+
+        /* Confluence print stylesheet. Common to all themes for print medi=
+a */
+/* Full of !important until we improve batching for print CSS */
+
+@media print {
+    #main {
+        padding-bottom: 1em !important; /* The default padding of 6em is to=
+o much for printouts */
+    }
+
+    body {
+        font-family: Arial, Helvetica, FreeSans, sans-serif;
+        font-size: 10pt;
+        line-height: 1.2;
+    }
+
+    body, #full-height-container, #main, #page, #content, .has-personal-sid=
+ebar #content {
+        background: var(--ds-surface, #fff) !important;
+        color: var(--ds-text, #000) !important;
+        border: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: block !important;
+    }
+
+    a, a:link, a:visited, a:focus, a:hover, a:active {
+        color: var(--ds-link-pressed, #000);
+    }
+
+    #content h1,
+    #content h2,
+    #content h3,
+    #content h4,
+    #content h5,
+    #content h6 {
+        font-family: Arial, Helvetica, FreeSans, sans-serif;
+        page-break-after: avoid;
+    }
+
+    pre {
+        font-family: Monaco, "Courier New", monospace;
+    }
+
+    #header,
+    .aui-header-inner,
+    #navigation,
+    #sidebar,
+    .sidebar,
+    #personal-info-sidebar,
+    .ia-fixed-sidebar,
+    .page-actions,
+    .navmenu,
+    .ajs-menu-bar,
+    .noprint,
+    .inline-control-link,
+    .inline-control-link a,
+    a.show-labels-editor,
+    .global-comment-actions,
+    .comment-actions,
+    .quick-comment-container,
+    #addcomment {
+        display: none !important;
+    }
+
+    /* CONF-28544 cannot print multiple pages in IE */
+    #splitter-content {
+        position: relative !important;
+    }
+
+    .comment .date::before {
+        content: none !important; /* remove middot for print view */
+    }
+
+    h1.pagetitle img {
+        height: auto;
+        width: auto;
+    }
+
+    .print-only {
+        display: block;
+    }
+
+    #footer {
+        position: relative !important; /* CONF-17506 Place the footer at en=
+d of the content */
+        margin: 0;
+        padding: 0;
+        background: none;
+        clear: both;
+    }
+
+    #poweredby {
+        border-top: none;
+        background: none;
+    }
+
+    #poweredby li.print-only {
+        display: list-item;
+        font-style: italic;
+    }
+
+    #poweredby li.noprint {
+        display: none;
+    }
+
+    /* no width controls in print */
+    .wiki-content .table-wrap,
+    .wiki-content p,
+    .panel .codeContent,
+    .panel .codeContent pre,
+    .image-wrap {
+        overflow: visible !important;
+    }
+
+    /* TODO - should this work? */
+    #children-section,
+    #comments-section .comment,
+    #comments-section .comment .comment-body,
+    #comments-section .comment .comment-content,
+    #comments-section .comment p {
+        page-break-inside: avoid;
+    }
+
+    #page-children a {
+        text-decoration: none;
+    }
+
+    /**
+     hide twixies
+
+     the specificity here is a hack because print styles
+     are getting loaded before the base styles. */
+    #comments-section.pageSection .section-header,
+    #comments-section.pageSection .section-title,
+    #children-section.pageSection .section-header,
+    #children-section.pageSection .section-title,
+    .children-show-hide {
+        padding-left: 0;
+        margin-left: 0;
+    }
+
+    .children-show-hide.icon {
+        display: none;
+    }
+
+    /* personal sidebar */
+    .has-personal-sidebar #content {
+        margin-right: 0px;
+    }
+
+    .has-personal-sidebar #content .pageSection {
+        margin-right: 0px;
+    }
+
+    .no-print, .no-print * {
+        display: none !important;
+    }
+}
+-->
+    </style>
+</head>
+<body>
+    <h1>High-level requirements</h1>
+    <div class=3D"Section1">
+        <p><br></p>
+<h2 id=3D"Highlevelrequirements-1.VehicleCatalog"><strong>1. Vehicle Catalo=
+g</strong></h2>
+<p><br></p>
+<div class=3D"table-wrap">
+ <table class=3D"wrapped confluenceTable">
+  <thead class=3D"">
+   <tr class=3D"">
+    <th class=3D"confluenceTh"><strong>Feature</strong></th>
+    <th class=3D"confluenceTh"><strong>Description</strong></th>
+    <th class=3D"confluenceTh"><strong>Stage</strong></th>
+   </tr>
+  </thead>
+  <tbody class=3D"">
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Basic search</td>
+    <td class=3D"confluenceTd">Search by make, model, VIN</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Basic filters</td>
+    <td class=3D"confluenceTd">Filter by make, model, year, mileage, transm=
+ission, drive type, fuel type, price, color, condition</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Sorting</td>
+    <td class=3D"confluenceTd">Sort by price, year, mileage, date added</td=
+>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Saved filters</td>
+    <td class=3D"confluenceTd">Save and reuse filter presets</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Extended filters</td>
+    <td class=3D"confluenceTd">Engine volume, horsepower, seller type, stoc=
+k availability, location</td>
+    <td class=3D"confluenceTd">Stage 2</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Smart search</td>
+    <td class=3D"confluenceTd">Keyword search, saved searches</td>
+    <td class=3D"confluenceTd">Stage 2</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Recommendations</td>
+    <td class=3D"confluenceTd">=E2=80=9CSimilar vehicles=E2=80=9D recommend=
+ation engine</td>
+    <td class=3D"confluenceTd">Stage 2</td>
+   </tr>
+  </tbody>
+ </table>
+</div>
+<hr>
+<h2 id=3D"Highlevelrequirements-2.VehicleDetailPage"><strong>2. Vehicle Det=
+ail Page</strong></h2>
+<p><br></p>
+<div class=3D"table-wrap">
+ <table class=3D"wrapped confluenceTable">
+  <thead class=3D"">
+   <tr class=3D"">
+    <th class=3D"confluenceTh"><strong>Feature</strong></th>
+    <th class=3D"confluenceTh"><strong>Description</strong></th>
+    <th class=3D"confluenceTh"><strong>Stage</strong></th>
+   </tr>
+  </thead>
+  <tbody class=3D"">
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Photo gallery</td>
+    <td class=3D"confluenceTd">20=E2=80=9330 images</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Vehicle specifications</td>
+    <td class=3D"confluenceTd">Full technical data, VIN, documents, service=
+ history</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Seller information</td>
+    <td class=3D"confluenceTd">Display seller profile and contact info</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Delivery calculator</td>
+    <td class=3D"confluenceTd">Embedded calculator for total cost</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Add to favorites</td>
+    <td class=3D"confluenceTd">Save the car to =E2=80=9CFavorites=E2=80=9D<=
+/td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">360=C2=B0 panorama</td>
+    <td class=3D"confluenceTd">Interior/exterior panoramic view</td>
+    <td class=3D"confluenceTd">Stage 2</td>
+   </tr>
+  </tbody>
+ </table>
+</div>
+<hr>
+<h2 id=3D"Highlevelrequirements-3.Currency&amp;Payments"><strong>3. Currenc=
+y &amp; Payments</strong></h2>
+<p><br></p>
+<div class=3D"table-wrap">
+ <table class=3D"wrapped confluenceTable">
+  <thead class=3D"">
+   <tr class=3D"">
+    <th class=3D"confluenceTh"><strong>Feature</strong></th>
+    <th class=3D"confluenceTh"><strong>Description</strong></th>
+    <th class=3D"confluenceTh"><strong>Stage</strong></th>
+   </tr>
+  </thead>
+  <tbody class=3D"">
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Multi-currency support</td>
+    <td class=3D"confluenceTd">AED, USD, EUR, RUB, KZT</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Live exchange rates</td>
+    <td class=3D"confluenceTd">Auto update every 30 min + 24h rate lock</td=
+>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Deposit payment</td>
+    <td class=3D"confluenceTd">Up to $5,000 via card/PayPal/Apple Pay/Googl=
+e Pay</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Full payment</td>
+    <td class=3D"confluenceTd">SWIFT transfer, crypto, local payment system=
+s</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Crypto payments</td>
+    <td class=3D"confluenceTd">USDT, USDC, BTC, ETH via Binance/Bybit</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Escrow option</td>
+    <td class=3D"confluenceTd">Conditional escrow account</td>
+    <td class=3D"confluenceTd">Stage 2</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Local payment methods</td>
+    <td class=3D"confluenceTd">For targeted countries (e.g., SBP, regional =
+gateways)</td>
+    <td class=3D"confluenceTd">Stage 2</td>
+   </tr>
+  </tbody>
+ </table>
+</div>
+<hr>
+<h2 id=3D"Highlevelrequirements-4.MultilingualSupport"><strong>4. Multiling=
+ual Support</strong></h2>
+<p><br></p>
+<div class=3D"table-wrap">
+ <table class=3D"wrapped confluenceTable">
+  <thead class=3D"">
+   <tr class=3D"">
+    <th class=3D"confluenceTh"><strong>Feature</strong></th>
+    <th class=3D"confluenceTh"><strong>Description</strong></th>
+    <th class=3D"confluenceTh"><strong>Stage</strong></th>
+   </tr>
+  </thead>
+  <tbody class=3D"">
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Languages RU + EN</td>
+    <td class=3D"confluenceTd">Full localization of UI, system messages</td=
+>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Translation system</td>
+    <td class=3D"confluenceTd">JSON/i18next, dynamic language switch</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Arabic language</td>
+    <td class=3D"confluenceTd">RTL interface support</td>
+    <td class=3D"confluenceTd">Stage 2</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Additional languages</td>
+    <td class=3D"confluenceTd">FR/ES/CN</td>
+    <td class=3D"confluenceTd">Stage 3</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Localized formats</td>
+    <td class=3D"confluenceTd">Dates, phone formats, currency formatting</t=
+d>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+  </tbody>
+ </table>
+</div>
+<hr>
+<h2 id=3D"Highlevelrequirements-5.DeliveryCalculator"><strong>5. Delivery C=
+alculator</strong></h2>
+<p><br></p>
+<div class=3D"table-wrap">
+ <table class=3D"wrapped confluenceTable">
+  <thead class=3D"">
+   <tr class=3D"">
+    <th class=3D"confluenceTh"><strong>Feature</strong></th>
+    <th class=3D"confluenceTh"><strong>Description</strong></th>
+    <th class=3D"confluenceTh"><strong>Stage</strong></th>
+   </tr>
+  </thead>
+  <tbody class=3D"">
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Full delivery cost calculation</td>
+    <td class=3D"confluenceTd">Auto cost breakdown (platform fee, transport=
+, insurance, customs, registration)</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Country-specific formulas</td>
+    <td class=3D"confluenceTd">Different import rules per region</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Air delivery options</td>
+    <td class=3D"confluenceTd">Air freight calculation</td>
+    <td class=3D"confluenceTd">Stage 2</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Insurance calculation</td>
+    <td class=3D"confluenceTd">Based on car value</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+  </tbody>
+ </table>
+</div>
+<hr>
+<h2 id=3D"Highlevelrequirements-6.OrderTracking&amp;Notifications"><strong>=
+6. Order Tracking &amp; Notifications</strong></h2>
+<p><br></p>
+<div class=3D"table-wrap">
+ <table class=3D"wrapped confluenceTable">
+  <thead class=3D"">
+   <tr class=3D"">
+    <th class=3D"confluenceTh"><strong>Feature</strong></th>
+    <th class=3D"confluenceTh"><strong>Description</strong></th>
+    <th class=3D"confluenceTh"><strong>Stage</strong></th>
+   </tr>
+  </thead>
+  <tbody class=3D"">
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Order statuses</td>
+    <td class=3D"confluenceTd">Full lifecycle: New =E2=86=92 Deposit =E2=86=
+=92 Verification =E2=86=92 Payment =E2=86=92 Shipment =E2=86=92 Customs =E2=
+=86=92 Ready =E2=86=92 Completed</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Shipment tracking</td>
+    <td class=3D"confluenceTd">Marine/AIS tracking, port updates</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Tracking visualization</td>
+    <td class=3D"confluenceTd">Map, milestones, progress bar</td>
+    <td class=3D"confluenceTd">Stage 2</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Smart notifications</td>
+    <td class=3D"confluenceTd">Push, SMS, Email based on events</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Notification settings</td>
+    <td class=3D"confluenceTd">Quiet hours, channels, frequency</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">ETA prediction</td>
+    <td class=3D"confluenceTd">Machine-learning estimation</td>
+    <td class=3D"confluenceTd">Stage 2</td>
+   </tr>
+  </tbody>
+ </table>
+</div>
+<hr>
+<h2 id=3D"Highlevelrequirements-7.UserPersonalDashboard(UserAccount)"><stro=
+ng>7. User Personal Dashboard (User Account)</strong></h2>
+<p><br></p>
+<div class=3D"table-wrap">
+ <table class=3D"wrapped confluenceTable">
+  <thead class=3D"">
+   <tr class=3D"">
+    <th class=3D"confluenceTh"><strong>Feature</strong></th>
+    <th class=3D"confluenceTh"><strong>Description</strong></th>
+    <th class=3D"confluenceTh"><strong>Stage</strong></th>
+   </tr>
+  </thead>
+  <tbody class=3D"">
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Dashboard</td>
+    <td class=3D"confluenceTd">Active orders, recommendations, recent views=
+</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Favorites</td>
+    <td class=3D"confluenceTd">Saved vehicles</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Saved searches</td>
+    <td class=3D"confluenceTd">Saved query presets</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Order history</td>
+    <td class=3D"confluenceTd">Full archive with documents</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Notification center</td>
+    <td class=3D"confluenceTd">List of all system notifications</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Profile settings</td>
+    <td class=3D"confluenceTd">Personal data, preferences, security</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Compare vehicles</td>
+    <td class=3D"confluenceTd">Comparison table</td>
+    <td class=3D"confluenceTd">Stage 2</td>
+   </tr>
+  </tbody>
+ </table>
+</div>
+<hr>
+<h2 id=3D"Highlevelrequirements-8.Booking&amp;OrderingSystem"><strong>8. Bo=
+oking &amp; Ordering System</strong></h2>
+<p><br></p>
+<div class=3D"table-wrap">
+ <table class=3D"wrapped confluenceTable">
+  <thead class=3D"">
+   <tr class=3D"">
+    <th class=3D"confluenceTh"><strong>Feature</strong></th>
+    <th class=3D"confluenceTh"><strong>Description</strong></th>
+    <th class=3D"confluenceTh"><strong>Stage</strong></th>
+   </tr>
+  </thead>
+  <tbody class=3D"">
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Add to cart</td>
+    <td class=3D"confluenceTd">Add the vehicle to cart for checkout</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Booking with deposit</td>
+    <td class=3D"confluenceTd">10% deposit payment</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Contract signing</td>
+    <td class=3D"confluenceTd">Digital contract before deposit</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Verification process</td>
+    <td class=3D"confluenceTd">Full inspection, photo/video report</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Final payment</td>
+    <td class=3D"confluenceTd">Flow for cryptocurrencies or bank transfer</=
+td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Delivery process</td>
+    <td class=3D"confluenceTd">Track status until hand-over</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+  </tbody>
+ </table>
+</div>
+<hr>
+<h2 id=3D"Highlevelrequirements-9.AdminPanel"><strong>9. Admin Panel</stron=
+g></h2>
+<p><br></p>
+<div class=3D"table-wrap">
+ <table class=3D"wrapped confluenceTable">
+  <thead class=3D"">
+   <tr class=3D"">
+    <th class=3D"confluenceTh"><strong>Feature</strong></th>
+    <th class=3D"confluenceTh"><strong>Description</strong></th>
+    <th class=3D"confluenceTh"><strong>Stage</strong></th>
+   </tr>
+  </thead>
+  <tbody class=3D"">
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Admin dashboard</td>
+    <td class=3D"confluenceTd">Sales stats, KPIs</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Car management</td>
+    <td class=3D"confluenceTd">Add/edit cars, CSV import, moderation</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">User management</td>
+    <td class=3D"confluenceTd">Registrations, verification, permissions</td=
+>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Order management</td>
+    <td class=3D"confluenceTd">Edit statuses, assign managers</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Partner management</td>
+    <td class=3D"confluenceTd">Commissions, supplier verification</td>
+    <td class=3D"confluenceTd">Stage 2</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">System settings</td>
+    <td class=3D"confluenceTd">Delivery formulas, exchange rates, notificat=
+ions, integrations</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+  </tbody>
+ </table>
+</div>
+<hr>
+<h2 id=3D"Highlevelrequirements-10.Support&amp;ChatSystem"><strong>10. Supp=
+ort &amp; Chat System</strong></h2>
+<p><br></p>
+<div class=3D"table-wrap">
+ <table class=3D"wrapped confluenceTable">
+  <thead class=3D"">
+   <tr class=3D"">
+    <th class=3D"confluenceTh"><strong>Feature</strong></th>
+    <th class=3D"confluenceTh"><strong>Description</strong></th>
+    <th class=3D"confluenceTh"><strong>Stage</strong></th>
+   </tr>
+  </thead>
+  <tbody class=3D"">
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Online chat</td>
+    <td class=3D"confluenceTd">Widget, file uploads</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Chatbot</td>
+    <td class=3D"confluenceTd">First-level automation</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Ticket queue</td>
+    <td class=3D"confluenceTd">Auto-routing, priority rules</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Multichannel communication</td>
+    <td class=3D"confluenceTd">VoIP, video calls, email integration</td>
+    <td class=3D"confluenceTd">Stage 2</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Support analytics</td>
+    <td class=3D"confluenceTd">Response time, operator load</td>
+    <td class=3D"confluenceTd">Stage 2</td>
+   </tr>
+  </tbody>
+ </table>
+</div>
+<hr>
+<h2 id=3D"Highlevelrequirements-11.Partner(Supplier)Portal"><strong>11. Par=
+tner (Supplier) Portal</strong></h2>
+<p><br></p>
+<div class=3D"table-wrap">
+ <table class=3D"wrapped confluenceTable">
+  <thead class=3D"">
+   <tr class=3D"">
+    <th class=3D"confluenceTh"><strong>Feature</strong></th>
+    <th class=3D"confluenceTh"><strong>Description</strong></th>
+    <th class=3D"confluenceTh"><strong>Stage</strong></th>
+   </tr>
+  </thead>
+  <tbody class=3D"">
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Supplier dashboard</td>
+    <td class=3D"confluenceTd">Sales, views, conversion</td>
+    <td class=3D"confluenceTd">Stage 2</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Car management</td>
+    <td class=3D"confluenceTd">Add/edit cars, batch updates, ERP import</td=
+>
+    <td class=3D"confluenceTd">Stage 2</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Financial module</td>
+    <td class=3D"confluenceTd">Payouts, commissions, tax reports</td>
+    <td class=3D"confluenceTd">Stage 2</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Chat with managers</td>
+    <td class=3D"confluenceTd">Internal communication</td>
+    <td class=3D"confluenceTd">Stage 2</td>
+   </tr>
+  </tbody>
+ </table>
+</div>
+<hr>
+<h2 id=3D"Highlevelrequirements-12.AdditionalServices"><strong>12. Addition=
+al Services</strong></h2>
+<p><br></p>
+<div class=3D"table-wrap">
+ <table class=3D"wrapped confluenceTable">
+  <thead class=3D"">
+   <tr class=3D"">
+    <th class=3D"confluenceTh"><strong>Feature</strong></th>
+    <th class=3D"confluenceTh"><strong>Description</strong></th>
+    <th class=3D"confluenceTh"><strong>Stage</strong></th>
+   </tr>
+  </thead>
+  <tbody class=3D"">
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Knowledge base</td>
+    <td class=3D"confluenceTd">Guides, customs rules, FAQ</td>
+    <td class=3D"confluenceTd">Stage 2</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Reviews system</td>
+    <td class=3D"confluenceTd">User reviews and supplier ratings</td>
+    <td class=3D"confluenceTd">Stage 2</td>
+   </tr>
+   <tr class=3D"">
+    <td class=3D"confluenceTd">Email/Push/SMS campaigns</td>
+    <td class=3D"confluenceTd">Marketing and system notifications</td>
+    <td class=3D"confluenceTd">MVP</td>
+   </tr>
+  </tbody>
+ </table>
+</div>
+    </div>
+</body>
+</html>

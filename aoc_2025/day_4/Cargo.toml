@@ -1,25 +1,15 @@
 [package]
-name = "day_template"
+name = "day_4"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [profile.release]
-codegen-units = 1
-debug = false
-strip = "none"
-debug-assertions = false
-overflow-checks = false
-lto = false
-panic = 'unwind'
-incremental = false
-rpath = false
+debug=true
 
 [build]
-rustflags = ["-C", "target-cpu=native"]
-
+rustflags = ["-C", "target-cpu=native", "-C", "force-frame-pointers=yes"]
 
 [dependencies]
 derive_more = { version = "1.0.0", features = ["from"] }
-mimalloc = "0.1.48"
 rustc-hash = "2.1.1"

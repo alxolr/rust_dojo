@@ -1,10 +1,7 @@
-mod error;
-mod solution;
-
+use day_template::{error, solution::Solution};
 use std::{fs, time::Instant};
 
 use error::Result;
-use solution::Solution;
 
 const TITLE: &str = "Day: Title";
 

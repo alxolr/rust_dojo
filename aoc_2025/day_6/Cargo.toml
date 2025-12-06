@@ -1,0 +1,15 @@
+[package]
+name = "day_6"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+derive_more = { version = "1.0.0", features = ["from"] }
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = 3
+
+[build]
+rustflags = ["-C", "target-cpu=native"]

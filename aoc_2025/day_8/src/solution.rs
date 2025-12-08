@@ -1,59 +1,149 @@
-use linfa::traits::{Fit, Predict};
-use linfa::DatasetBase;
-use linfa_clustering::KMeans;
-use ndarray::{Array1, Array2};
+use ordered_float::OrderedFloat;
+use std::collections::BinaryHeap;
 
-use crate::error::{Error, Result};
+use crate::{error::Result, uf::UnionFind};
 pub struct Solution;
 
-impl Solution {
-    pub fn part_1(input: &str) -> Result<u64> {
-        let records = parse_input(input)?;
-        let num_samples = records.nrows();
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
+struct Point([OrderedFloat<f64>; 3]);
 
-        // Create dataset for unsupervised learning with unit targets
-        let targets: Array1<()> = Array1::from_elem(num_samples, ());
-        let dataset = DatasetBase::new(records.clone(), targets);
+#[derive(Debug, PartialEq, Eq)]
+struct Fuse<'a>(OrderedFloat<f64>, &'a Point, &'a Point);
 
-        let n_clusters = 2;
-
-        // Configure and run K-means
-        let model = KMeans::params(n_clusters)
-            .n_runs(100)
-            .fit(&dataset)
-            .map_err(|e| Error::KMeans(e.to_string()))?;
-
-        // Get cluster assignments
-        let assignments = model.predict(&records);
-
-        println!("Cluster assignments: {:?}", assignments);
-        // We need to find the k for the k means algorithm
-        // In order to achieve that we will try different k values
-        // After we will use a silhouette method to identify the best fitting k
-
-        Ok(0)
-    }
-    pub fn part_2(_input: &str) -> Result<u64> {
-        Ok(0)
+impl<'a> Ord for Fuse<'a> {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        // Reverse ordering for descending sort (max heap behavior)
+        other
+            .0
+            .partial_cmp(&self.0)
+            .unwrap_or(std::cmp::Ordering::Equal)
     }
 }
 
-fn parse_input(input: &str) -> Result<Array2<f64>> {
-    let points: Vec<f64> = input
+impl<'a> PartialOrd for Fuse<'a> {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Solution {
+    pub fn part_1(input: &str, max_junctions: usize) -> Result<u64> {
+        let points = parse_input(input)?;
+        let points_count = points.len();
+
+        // Calculate the distances and add in a binary heap
+        let mut binary_heap = BinaryHeap::with_capacity((points_count * (points_count + 1)) / 2);
+        for p1 in 0..points.len() {
+            for p2 in p1 + 1..points.len() {
+                let distance = distance(&points[p1], &points[p2]);
+                let fuse = Fuse(distance, &points[p1], &points[p2]);
+                binary_heap.push(fuse);
+            }
+        }
+
+        // Initialize UnionFind
+        let mut uf = UnionFind::new(points_count);
+        let mut junctions = 0;
+
+        // Process fuses in descending order of distance
+        while let Some(fuse) = binary_heap.pop() {
+            junctions += 1;
+            let Fuse(_, p1, p2) = fuse;
+
+            // Find indices of the points
+            let idx1 = points.iter().position(|p| p == p1).unwrap_or_default();
+            let idx2 = points.iter().position(|p| p == p2).unwrap_or_default();
+
+            // Union the two points
+            uf.union(idx1, idx2);
+
+            if junctions == max_junctions {
+                break;
+            }
+        }
+
+        let sizes = uf.get_component_sizes();
+        let mut junctions = sizes.values().collect::<Vec<_>>();
+        junctions.sort_unstable();
+
+        let response = junctions.iter().rev().take(3).fold(1, |mut acc, it| {
+            acc *= *it;
+            acc
+        });
+
+        Ok(response as u64)
+    }
+
+    pub fn part_2(input: &str) -> Result<f64> {
+        let points = parse_input(input)?;
+        let points_count = points.len();
+
+        // Calculate the distances and add in a binary heap
+        let mut binary_heap = BinaryHeap::with_capacity((points_count * (points_count + 1)) / 2);
+        for p1 in 0..points.len() {
+            for p2 in p1 + 1..points.len() {
+                let distance = distance(&points[p1], &points[p2]);
+                let fuse = Fuse(distance, &points[p1], &points[p2]);
+                binary_heap.push(fuse);
+            }
+        }
+
+        // Initialize UnionFind
+        let mut uf = UnionFind::new(points_count);
+
+        // Process fuses in descending order of distance
+        while let Some(fuse) = binary_heap.pop() {
+            let Fuse(_, p1, p2) = fuse;
+
+            // Find indices of the points
+            let idx1 = points.iter().position(|p| p == p1).unwrap_or_default();
+            let idx2 = points.iter().position(|p| p == p2).unwrap_or_default();
+
+            // Union the two points
+            uf.union(idx1, idx2);
+
+            if uf.count_components() == 1 {
+                let OrderedFloat(result) = p1.0[0] * p2.0[0];
+
+                return Ok(result);
+            }
+        }
+
+        panic!("Should've returned already")
+    }
+}
+
+fn distance(point1: &Point, point2: &Point) -> OrderedFloat<f64> {
+    let Point([x1, y1, z1]) = point1;
+    let Point([x2, y2, z2]) = point2;
+
+    let dx = (x2 - x1).powf(2.0);
+    let dy = (y2 - y1).powf(2.0);
+    let dz = (z2 - z1).powf(2.0);
+
+    let distance = (dx + dy + dz).sqrt();
+
+    OrderedFloat(distance)
+}
+
+fn parse_input(input: &str) -> Result<Vec<Point>> {
+    let points = input
         .lines()
-        .flat_map(|line| {
-            line.trim()
+        .map(|line| {
+            let [x, y, z] = line
+                .trim()
                 .split(",")
                 .flat_map(|val| val.parse::<f64>())
-                .collect::<Vec<_>>()
+                .collect::<Vec<_>>()[..]
+            else {
+                panic!("Broken line");
+            };
+
+            Point([OrderedFloat(x), OrderedFloat(y), OrderedFloat(z)])
         })
         .collect();
 
-    let num_points = points.len() / 3;
-
-    let arr = Array2::from_shape_vec((num_points, 3), points)?;
-
-    Ok(arr)
+    Ok(points)
 }
 
 #[cfg(test)]
@@ -83,15 +173,14 @@ mod tests {
 
     #[test]
     fn test_part_1() -> Result<()> {
-        assert_eq!(Solution::part_1(COMMON_INPUT)?, 40);
+        assert_eq!(Solution::part_1(COMMON_INPUT, 10)?, 40);
 
         Ok(())
     }
 
     #[test]
     fn test_part_2() -> Result<()> {
-        let input = r#""#;
-        assert_eq!(Solution::part_2(input)?, 0);
+        assert_eq!(Solution::part_2(COMMON_INPUT)?, 25272.0);
 
         Ok(())
     }

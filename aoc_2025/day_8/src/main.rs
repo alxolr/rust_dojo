@@ -2,7 +2,6 @@ use day_template::{error, solution::Solution};
 use std::{fs, time::Instant};
 
 use error::Result;
-
 const TITLE: &str = "Day: Title";
 
 fn main() -> Result<()> {
@@ -10,11 +9,13 @@ fn main() -> Result<()> {
     println!("{}", TITLE);
 
     let now = Instant::now();
-    let part_1_sol = Solution::part_1(&input)?;
+    let part_1_sol = Solution::part_1(&input, 1000)?;
+    assert_eq!(352584, part_1_sol);
     println!("part 1 = {} ({:.2?})", part_1_sol, now.elapsed());
 
     let now = Instant::now();
     let part_2_sol = Solution::part_2(&input)?;
+    assert_eq!(9617397716.0, part_2_sol);
     println!("part 2 = {} ({:.2?})", part_2_sol, now.elapsed());
 
     Ok(())

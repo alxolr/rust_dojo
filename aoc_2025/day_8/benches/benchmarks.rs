@@ -11,7 +11,7 @@ fn bench_solutions(c: &mut Criterion) {
     let mut group = c.benchmark_group("Solution");
 
     group.bench_with_input(BenchmarkId::new("part", 1), &input, |b, input| {
-        b.iter(|| black_box(Solution::part_1(input)));
+        b.iter(|| black_box(Solution::part_1(input, 1000)));
     });
 
     group.bench_with_input(BenchmarkId::new("part", 2), &input, |b, input| {

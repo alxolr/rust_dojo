@@ -96,11 +96,11 @@ impl Solution {
             let Fuse(_, p1, p2) = fuse;
 
             // Find indices of the points
-            let idx1 = points.iter().position(|p| p == p1).unwrap_or_default();
-            let idx2 = points.iter().position(|p| p == p2).unwrap_or_default();
+            let id1 = points.iter().position(|p| p == p1).unwrap_or_default();
+            let id2 = points.iter().position(|p| p == p2).unwrap_or_default();
 
             // Union the two points
-            uf.union(idx1, idx2);
+            uf.union(id1, id2);
 
             if uf.count_components() == 1 {
                 let OrderedFloat(result) = p1.0[0] * p2.0[0];

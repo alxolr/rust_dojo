@@ -43,6 +43,7 @@ impl UnionFind {
                 self.rank[root_x] += 1;
             }
         }
+
         true
     }
 

@@ -53,6 +53,8 @@ impl Solution {
 
         // A dp grid
         let mut timelines_dp = vec![vec![0; cols]; rows];
+
+        // let distinct_beams = simulate_run(&grid);
         let (start_row, start_col) = locate_start(&grid).unwrap_or((0, 0));
 
         // Initialize the leaf row where there are the last beams with 1

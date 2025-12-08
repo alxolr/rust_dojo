@@ -1,0 +1,22 @@
+[package]
+name = "day_template"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+bench = false
+
+[dependencies]
+derive_more = { version = "2.1.0", features = ["from"] }
+linfa = "0.8.0"
+linfa-clustering = "0.8.0"
+ndarray = "0.16.1"
+
+[dev-dependencies]
+criterion = "0.8"
+
+[[bench]]
+name = "benchmarks" # This name corresponds to the file in the benches/ directory
+harness = false          # Required to use criterion

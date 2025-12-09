@@ -62,8 +62,7 @@ impl Solution {
             }
         }
 
-        let sizes = uf.get_component_sizes();
-        let mut junctions = sizes.values().collect::<Vec<_>>();
+        let mut junctions = uf.component_lengths.clone();
         junctions.sort_unstable();
 
         let response = junctions.iter().rev().take(3).fold(1, |mut acc, it| {
@@ -100,9 +99,9 @@ impl Solution {
             let id2 = points.iter().position(|p| p == p2).unwrap_or_default();
 
             // Union the two points
-            uf.union(id1, id2);
 
-            if uf.count_components() == 1 {
+            uf.union(id1, id2);
+            if uf.components_count == 1 {
                 let OrderedFloat(result) = p1.0[0] * p2.0[0];
 
                 return Ok(result);

@@ -1,9 +1,17 @@
-use std::collections::{HashMap, HashSet};
+use std::{
+    cmp::Ordering::{Equal, Greater, Less},
+    collections::HashMap,
+};
 
 #[derive(Debug)]
 pub struct UnionFind {
     parent: Vec<usize>,
     rank: Vec<usize>,
+
+    // Used for part 1
+    pub component_lengths: Vec<usize>,
+    // Used for part 2
+    pub components_count: usize,
 }
 
 impl UnionFind {
@@ -11,6 +19,8 @@ impl UnionFind {
         Self {
             parent: (0..size).collect(),
             rank: vec![0; size],
+            components_count: size,
+            component_lengths: vec![1; size],
         }
     }
 
@@ -32,29 +42,26 @@ impl UnionFind {
 
         // Union by rank
         match self.rank[root_x].cmp(&self.rank[root_y]) {
-            std::cmp::Ordering::Less => {
+            Less => {
                 self.parent[root_x] = root_y;
+                self.component_lengths[root_y] += self.component_lengths[root_x];
+                self.component_lengths[root_x] = 0;
             }
-            std::cmp::Ordering::Greater => {
+            Greater => {
                 self.parent[root_y] = root_x;
+                self.component_lengths[root_x] += self.component_lengths[root_y];
+                self.component_lengths[root_y] = 0;
             }
-            std::cmp::Ordering::Equal => {
+            Equal => {
                 self.parent[root_y] = root_x;
+                self.component_lengths[root_x] += self.component_lengths[root_y];
+                self.component_lengths[root_y] = 0;
                 self.rank[root_x] += 1;
             }
         }
+        self.components_count -= 1;
 
         true
-    }
-
-    pub fn count_components(&mut self) -> usize {
-        let mut roots = HashSet::new();
-
-        for i in 0..self.parent.len() {
-            roots.insert(self.find(i)); // Find root of each element
-        }
-
-        roots.len()
     }
 
     pub fn get_component_sizes(&mut self) -> HashMap<usize, usize> {

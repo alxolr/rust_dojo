@@ -47,18 +47,21 @@ impl Solution {
             entry.insert(*row);
         }
 
-        for (id1, point) in points.iter().enumerate() {
-            for id2 in id1 + 1..points_len {
-                let other_two = get_other_two_points(point, &points[id2]);
+        println!("{}", horizontal_lines.len());
+        println!("{}", vertical_lines.len());
 
-                if other_two
-                    .iter()
-                    .all(|point| is_inside_polygon(point, &vertical_lines, &horizontal_lines))
-                {
-                    max_area = max_area.max(rectangle_area(point, &points[id2]));
-                }
-            }
-        }
+        // for (id1, point) in points.iter().enumerate() {
+        //     for id2 in id1 + 1..points_len {
+        //         let other_two = get_perimeter_points(point, &points[id2]);
+
+        //         if other_two
+        //             .iter()
+        //             .all(|point| is_inside_polygon(point, &vertical_lines, &horizontal_lines))
+        //         {
+        //             max_area = max_area.max(rectangle_area(point, &points[id2]));
+        //         }
+        //     }
+        // }
 
         Ok(max_area)
     }
@@ -121,13 +124,13 @@ fn is_inside_polygon(
     vertical_intersections % 2 == 1 && horizontal_intersections % 2 == 1
 }
 
-fn get_other_two_points(point1: &Point, point2: &Point) -> [Point; 2] {
-    // this means point1 is top_right
-    let top_left = (point1.0, point2.1);
-    let bottom_right = (point2.0, point1.1);
+// fn get_other_two_points(point1: &Point, point2: &Point) -> [Point; 2] {
+//     // this means point1 is top_right
+//     let top_left = (point1.0, point2.1);
+//     let bottom_right = (point2.0, point1.1);
 
-    [top_left, bottom_right]
-}
+//     [top_left, bottom_right]
+// }
 
 fn rectangle_area(p1: &Point, p2: &Point) -> u64 {
     (((p1.0 as i64 - p2.0 as i64).abs() + 1) * ((p1.1 as i64 - p2.1 as i64).abs() + 1)) as u64

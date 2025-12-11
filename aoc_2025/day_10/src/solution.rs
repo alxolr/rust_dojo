@@ -1,17 +1,42 @@
 use std::{
-    collections::{HashSet, VecDeque},
+    cmp::Ordering,
+    collections::{BinaryHeap, HashSet, VecDeque},
     hash::Hash,
 };
 
 use crate::error::Result;
 pub struct Solution;
 
+#[derive(Eq, Ord)]
+struct HeuristicState<T>(u64, T);
+
+impl<T> PartialEq for HeuristicState<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.0 == other.0
+    }
+}
+
+impl<T> PartialOrd for HeuristicState<T> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        self.0.partial_cmp(&other.0)
+    }
+}
+
 impl Solution {
     pub fn part_1(input: &str) -> Result<u64> {
-        let xor = |a: &u16, b: &u16| -> u16 { a ^ b };
+        let xor_state_transition_fn = |a: &u16, b: &u16| -> u16 { a ^ b };
+        let empty_heuristic_fn = |_: &u16, _: &u16| -> u64 { 1 }; // we don't care about  heuristic in here
 
         let answer = parse_input(input)
-            .map(|(initial_state, masks)| state_machine(initial_state, 0u16, &masks, xor))
+            .map(|(initial_state, masks)| {
+                a_star_traversal(
+                    initial_state,
+                    0u16,
+                    &masks,
+                    xor_state_transition_fn,
+                    empty_heuristic_fn,
+                )
+            })
             .sum();
 
         Ok(answer)
@@ -24,35 +49,47 @@ impl Solution {
 }
 
 // Count the minimum amount of changes
-fn state_machine<T, F>(
-    initial_state: T,
+fn a_star_traversal<T, F, H>(
+    start_state: T,
     target_state: T,
     transitions: &Vec<T>,
-    state_change: F,
+    state_change_fn: F,
+    heuristic_fn: H, // it's used to sort the output given a value which makes the current state closer to the target
 ) -> u64
 where
-    T: Hash + Eq + PartialEq + Clone,
+    T: Hash + Eq + PartialEq + Clone + Ord,
     F: Fn(&T, &T) -> T,
+    H: Fn(&T, &T) -> u64,
 {
     // we treat the state as a u16 number, and the masks as well, we will use xor to inverse the bits
     // we will use a breadth first search algorithm to find the number of iterations
     // we go backwards from our state to state ....... -> which is zero
     let mut visited_states = HashSet::new();
     let mut state_machine = VecDeque::<(usize, T)>::new();
-    state_machine.push_front((0, initial_state.clone()));
-    visited_states.insert(initial_state);
+    state_machine.push_front((0, start_state.clone()));
+    visited_states.insert(start_state);
 
     while let Some((clicks, state)) = state_machine.pop_front() {
         if state == target_state {
             return clicks as u64;
         }
 
-        for mask in transitions.iter() {
-            let new_state = state_change(&state, mask);
-            if !visited_states.contains(&new_state) {
-                visited_states.insert(new_state.clone());
-                state_machine.push_back((clicks + 1, new_state));
-            }
+        let mut heuristic_states = transitions
+            .iter()
+            .map(|transition| state_change_fn(&state, transition))
+            .filter_map(|transition| {
+                if !visited_states.contains(&transition) {
+                    let heuristic = heuristic_fn(&transition, &target_state);
+                    Some(HeuristicState(heuristic, transition))
+                } else {
+                    None
+                }
+            })
+            .collect::<BinaryHeap<HeuristicState<T>>>();
+
+        while let Some(HeuristicState(_, new_state)) = heuristic_states.pop() {
+            visited_states.insert(new_state.clone());
+            state_machine.push_back((clicks + 1, new_state));
         }
     }
 

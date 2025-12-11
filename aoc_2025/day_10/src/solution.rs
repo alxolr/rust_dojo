@@ -1,14 +1,15 @@
 use std::{
     cmp::Ordering,
     collections::{BinaryHeap, HashSet, VecDeque},
+    fmt::Debug,
     hash::Hash,
 };
 
 use crate::error::Result;
 pub struct Solution;
 
-#[derive(Eq, Ord)]
-struct HeuristicState<T>(u64, T);
+#[derive(Eq, Ord, Debug)]
+struct HeuristicState<T>(u16, T);
 
 impl<T> PartialEq for HeuristicState<T> {
     fn eq(&self, other: &Self) -> bool {
@@ -24,16 +25,18 @@ impl<T> PartialOrd for HeuristicState<T> {
 
 impl Solution {
     pub fn part_1(input: &str) -> Result<u64> {
-        let xor_state_transition_fn = |a: &u16, b: &u16| -> u16 { a ^ b };
-        let empty_heuristic_fn = |_: &u16, _: &u16| -> u64 { 1 }; // we don't care about  heuristic in here
+        let xor_state_change_fn = |a: &u16, b: &u16| -> u16 { a ^ b };
+        let empty_heuristic_fn = |_: &u16, _: &u16| -> u16 { 1 }; // we don't care about  heuristic in here
+        let is_valid_transition_fn = |_: &u16, _: &u16| -> bool { true };
 
-        let answer = parse_input(input)
+        let answer = parse_part_1(input)
             .map(|(initial_state, masks)| {
                 a_star_traversal(
                     initial_state,
                     0u16,
                     &masks,
-                    xor_state_transition_fn,
+                    is_valid_transition_fn,
+                    xor_state_change_fn,
                     empty_heuristic_fn,
                 )
             })
@@ -42,24 +45,70 @@ impl Solution {
         Ok(answer)
     }
 
-    pub fn part_2(_input: &str) -> Result<u64> {
-        let answer = 1;
+    pub fn part_2(input: &str) -> Result<u64> {
+        let is_valid_transition_fn = |transition: &Vec<u16>, target: &Vec<u16>| -> bool {
+            target
+                .iter()
+                .zip(transition.iter())
+                .all(|(tar, cur)| tar >= cur)
+        };
+
+        let state_change_fn = |state: &Vec<u16>, transition: &Vec<u16>| -> Vec<u16> {
+            let mut state = state.clone();
+
+            for ord in transition {
+                state[*ord as usize] += 1;
+            }
+
+            state
+        };
+
+        let heuristic_fn = |curr: &Vec<u16>, target: &Vec<u16>| -> u16 {
+            let sum = target.iter().sum::<u16>();
+
+            let state_diff = target
+                .iter()
+                .zip(curr.iter())
+                .map(|(tar, cur)| *tar - *cur)
+                .sum::<u16>();
+
+            sum - state_diff
+        };
+
+        let answer = parse_part_2(input)
+            .enumerate()
+            .map(|(line, (transitions, target_state))| {
+                println!("processing {}", line + 1);
+
+                a_star_traversal(
+                    vec![0; target_state.len()],
+                    target_state,
+                    &transitions,
+                    is_valid_transition_fn,
+                    state_change_fn,
+                    heuristic_fn,
+                )
+            })
+            .sum();
+
         Ok(answer)
     }
 }
 
 // Count the minimum amount of changes
-fn a_star_traversal<T, F, H>(
+fn a_star_traversal<T, F, H, E>(
     start_state: T,
     target_state: T,
     transitions: &Vec<T>,
+    is_valid_fn: E, // we will be filtering states that exceed the value
     state_change_fn: F,
     heuristic_fn: H, // it's used to sort the output given a value which makes the current state closer to the target
 ) -> u64
 where
-    T: Hash + Eq + PartialEq + Clone + Ord,
+    T: Hash + Eq + PartialEq + Clone + Ord + Debug,
     F: Fn(&T, &T) -> T,
-    H: Fn(&T, &T) -> u64,
+    H: Fn(&T, &T) -> u16,
+    E: Fn(&T, &T) -> bool,
 {
     // we treat the state as a u16 number, and the masks as well, we will use xor to inverse the bits
     // we will use a breadth first search algorithm to find the number of iterations
@@ -78,7 +127,8 @@ where
             .iter()
             .map(|transition| state_change_fn(&state, transition))
             .filter_map(|transition| {
-                if !visited_states.contains(&transition) {
+                if !visited_states.contains(&transition) && is_valid_fn(&transition, &target_state)
+                {
                     let heuristic = heuristic_fn(&transition, &target_state);
                     Some(HeuristicState(heuristic, transition))
                 } else {
@@ -96,7 +146,35 @@ where
     panic!("Expected to finish by now")
 }
 
-fn parse_input(input: &str) -> impl Iterator<Item = (u16, Vec<u16>)> + use<'_> {
+fn parse_part_2(input: &str) -> impl Iterator<Item = (Vec<Vec<u16>>, Vec<u16>)> + use<'_> {
+    input.lines().map(|line| {
+        let line_parts = line.trim().split_whitespace().collect::<Vec<_>>();
+        let count = line_parts.len();
+
+        let transitions = line_parts.iter().skip(1).take(count - 2);
+        let transitions = transitions
+            .map(|transition| {
+                transition
+                    .replace("(", "")
+                    .replace(")", "")
+                    .split(",")
+                    .flat_map(|num| num.parse::<u16>())
+                    .collect::<Vec<_>>()
+            })
+            .collect::<Vec<Vec<u16>>>();
+
+        let state = line_parts[count - 1]
+            .replace("{", "")
+            .replace("}", "")
+            .split(",")
+            .flat_map(|num| num.parse::<u16>())
+            .collect::<Vec<_>>();
+
+        (transitions, state)
+    })
+}
+
+fn parse_part_1(input: &str) -> impl Iterator<Item = (u16, Vec<u16>)> + use<'_> {
     input.lines().map(|line| {
         // let mut parts = line.trim().split_whitespace();
         let line_parts = line.trim().split_whitespace().collect::<Vec<_>>();
@@ -151,7 +229,7 @@ mod tests {
     #[test]
     fn test_part_2() -> Result<()> {
         let input = r#"[.##.] (3) (1,3) (2) (2,3) (0,2) (0,1) {3,5,4,7}"#;
-        assert_eq!(Solution::part_2(input)?, 0);
+        assert_eq!(Solution::part_2(input)?, 10);
 
         Ok(())
     }

@@ -5,6 +5,8 @@ use std::{
     hash::Hash,
 };
 
+use rayon::{iter::ParallelIterator, str::ParallelString};
+
 use crate::error::Result;
 pub struct Solution;
 
@@ -76,9 +78,8 @@ impl Solution {
         };
 
         let answer = parse_part_2(input)
-            .enumerate()
-            .map(|(line, (transitions, target_state))| {
-                println!("processing {}", line + 1);
+            .map(|(transitions, target_state)| {
+                println!("processing");
 
                 a_star_traversal(
                     vec![0; target_state.len()],
@@ -146,8 +147,8 @@ where
     panic!("Expected to finish by now")
 }
 
-fn parse_part_2(input: &str) -> impl Iterator<Item = (Vec<Vec<u16>>, Vec<u16>)> + use<'_> {
-    input.lines().map(|line| {
+fn parse_part_2(input: &str) -> impl ParallelIterator<Item = (Vec<Vec<u16>>, Vec<u16>)> + use<'_> {
+    input.par_lines().map(|line| {
         let line_parts = line.trim().split_whitespace().collect::<Vec<_>>();
         let count = line_parts.len();
 
@@ -228,7 +229,10 @@ mod tests {
 
     #[test]
     fn test_part_2() -> Result<()> {
-        let input = r#"[.##.] (3) (1,3) (2) (2,3) (0,2) (0,1) {3,5,4,7}"#;
+        // let input = r#"[.##.] (3) (1,3) (2) (2,3) (0,2) (0,1) {3,5,4,7}"#;
+        // assert_eq!(Solution::part_2(input)?, 10);
+
+        let input = r#"[.##....#] (0,1,2,3,4,5,7) (0,2,3,7) (1,3,5,6) (0,1,2,6) (2,3,5,6,7) (2,4) (0,1,2,3,7) (0,2,3,5,6,7) {171,166,199,75,30,65,170,64}"#;
         assert_eq!(Solution::part_2(input)?, 10);
 
         Ok(())

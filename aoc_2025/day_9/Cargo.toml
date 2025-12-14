@@ -10,6 +10,8 @@ bench = false
 
 [dependencies]
 derive_more = { version = "2.1.0", features = ["from"] }
+itertools = "0.14.0"
+plotters = "0.3.7"
 
 [dev-dependencies]
 criterion = "0.8"

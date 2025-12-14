@@ -11,10 +11,12 @@ fn main() -> Result<()> {
 
     let now = Instant::now();
     let part_1_sol = Solution::part_1(&input)?;
+    assert_eq!(part_1_sol, 4777816465);
     println!("part 1 = {} ({:.2?})", part_1_sol, now.elapsed());
 
     let now = Instant::now();
     let part_2_sol = Solution::part_2(&input)?;
+    assert_eq!(part_2_sol, 1410501884);
     println!("part 2 = {} ({:.2?})", part_2_sol, now.elapsed());
 
     Ok(())

@@ -140,7 +140,6 @@ impl Solution {
         }
 
         let mut max_area = 0;
-        let mut best_rect: Option<((usize, usize), (usize, usize))> = None;
 
         for (id1, point) in points.iter().enumerate() {
             for id2 in id1 + 1..points.len() {
@@ -155,14 +154,10 @@ impl Solution {
                     let area = rectangle_area(point, &points[id2]);
                     if area > max_area {
                         max_area = area;
-                        best_rect = Some((p1, p2));
                     }
                 }
             }
         }
-
-        // Draw the grid with the best rectangle highlighted
-        let _ = draw_grid(&compressed_grid, "answer.jpg", best_rect.as_ref());
 
         Ok(max_area as u64)
     }

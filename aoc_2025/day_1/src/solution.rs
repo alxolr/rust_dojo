@@ -1,42 +1,35 @@
 use crate::error::Result;
+
 pub struct Solution;
 
 impl Solution {
     pub fn part_1(input: &str) -> Result<i32> {
-        let values = parse_values(input);
-        let starting_position = 50;
+        let answer = parse_input(input)
+            .scan(50, |state, (dir, count)| {
+                let count = count % 100; // We don't need to take in consideration for the full rotations.
 
-        // observations 0..=99 inclusiv
-        let result = values
-            .iter()
-            .scan(starting_position, |state, (dir, count)| {
-                let count = count % 100; // We don't need to take in consideration for all the operations.
-
-                match *dir {
-                    "R" => *state = (*state + count) % 100, // If we move Right we increment the sum,and handle the overflow by moding with 100
-                    _ => *state = (*state + 100 - count) % 100, // If we move Left we increment the sum with the difference from 100 to count, and then mod with 100
+                match dir {
+                    // If we move Right we increment the sum,and handle the overflow by moding with 100
+                    "R" => *state = (*state + count) % 100,
+                    // If we move Left we increment the sum with the difference from 100 to count, and then mod with 100
+                    _ => *state = (*state + 100 - count) % 100,
                 };
 
                 Some(if *state == 0 { 1 } else { 0 })
             })
             .sum();
 
-        Ok(result)
+        Ok(answer)
     }
 
     pub fn part_2(input: &str) -> Result<i32> {
-        let values = parse_values(input);
-        let starting_position = 50;
-
-        // observations 0..=99 inclusiv
-        let result = values
-            .iter()
-            .scan(starting_position, |state, (dir, count)| {
+        let answer = parse_input(input)
+            .scan(50, |state, (dir, count)| {
                 let mut rotations = 0;
                 rotations += count / 100; // Count full rotations
                 let count = count % 100;
 
-                match *dir {
+                match dir {
                     "R" => {
                         let overflow = *state + count;
                         rotations += if overflow != 100 { overflow / 100 } else { 0 }; // For the case when it's 100 we don't double count it
@@ -59,22 +52,18 @@ impl Solution {
             })
             .sum();
 
-        Ok(result)
+        Ok(answer)
     }
 }
 
-fn parse_values<'a>(input: &'a str) -> Vec<(&'a str, i32)> {
-    input
-        .lines()
-        .filter(|line| !line.is_empty())
-        .map(|line| {
-            let line = line.trim();
-            let direction = &line[0..1];
-            let times = (&line[1..]).parse::<i32>().expect("Could not parse");
+fn parse_input<'a>(input: &'a str) -> impl Iterator<Item = (&'a str, i32)> + 'a {
+    input.lines().filter(|line| !line.is_empty()).map(|line| {
+        let line = line.trim();
+        let direction = &line[0..1];
+        let times = (&line[1..]).parse::<i32>().expect("Could not parse");
 
-            (direction, times)
-        })
-        .collect()
+        (direction, times)
+    })
 }
 
 #[cfg(test)]

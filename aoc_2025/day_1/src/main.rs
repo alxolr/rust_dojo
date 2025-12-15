@@ -22,6 +22,20 @@ fn main() -> Result<()> {
     assert_eq!(part_2_sol, 5892);
     println!("part 2 = {} ({:.2?})", part_2_sol, now.elapsed());
 
+
+     let input = load_from_file("./data/andrei")?;
+    println!("{}", TITLE);
+
+    let now = Instant::now();
+    let part_1_sol = Solution::part_1(&input)?;
+    // assert_eq!(part_1_sol, 1029);
+    println!("part 1 = {} ({:.2?})", part_1_sol, now.elapsed());
+
+    let now = Instant::now();
+    let part_2_sol = Solution::part_2(&input)?;
+    // assert_eq!(part_2_sol, 5892);
+    println!("part 2 = {} ({:.2?})", part_2_sol, now.elapsed());
+
     Ok(())
 }
 

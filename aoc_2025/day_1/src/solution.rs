@@ -4,7 +4,7 @@ pub struct Solution;
 
 impl Solution {
     pub fn part_1(input: &str) -> Result<i32> {
-        let answer = parse_input(input)
+        let zero_counts = get_rotations(input)
             .scan(50, |state, (dir, count)| {
                 let count = count % 100; // We don't need to take in consideration for the full rotations.
 
@@ -19,11 +19,11 @@ impl Solution {
             })
             .sum();
 
-        Ok(answer)
+        Ok(zero_counts)
     }
 
     pub fn part_2(input: &str) -> Result<i32> {
-        let answer = parse_input(input)
+        let passes_through_zero = get_rotations(input)
             .scan(50, |state, (dir, count)| {
                 let mut rotations = 0;
                 rotations += count / 100; // Count full rotations
@@ -52,17 +52,21 @@ impl Solution {
             })
             .sum();
 
-        Ok(answer)
+        Ok(passes_through_zero)
     }
 }
 
-fn parse_input<'a>(input: &'a str) -> impl Iterator<Item = (&'a str, i32)> + 'a {
-    input.lines().filter(|line| !line.is_empty()).map(|line| {
-        let line = line.trim();
-        let direction = &line[0..1];
-        let times = (&line[1..]).parse::<i32>().expect("Could not parse");
+fn get_rotations<'a>(input: &'a str) -> impl Iterator<Item = (&'a str, i32)> + 'a {
+    input.lines().filter_map(|line| {
+        if !line.is_empty() {
+            let line = line.trim();
+            let direction = &line[0..1];
+            let times = (&line[1..]).parse::<i32>().expect("Could not parse");
 
-        (direction, times)
+            Some((direction, times))
+        } else {
+            None
+        }
     })
 }
 

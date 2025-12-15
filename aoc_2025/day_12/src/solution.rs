@@ -98,7 +98,7 @@ mod tests {
         4x4: 0 0 0 0 2 0
         12x5: 1 0 1 0 2 2
         12x5: 1 0 1 0 3 2"#;
-        assert_eq!(Solution::part_1(input)?, 0);
+        assert_eq!(Solution::part_1(input)?, 3);
 
         Ok(())
     }

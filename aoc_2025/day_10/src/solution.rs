@@ -1,4 +1,4 @@
-use std::{
+use std::{ 
     cmp::Ordering,
     collections::{BinaryHeap, HashSet, VecDeque},
     fmt::Debug,
@@ -48,48 +48,8 @@ impl Solution {
     }
 
     pub fn part_2(input: &str) -> Result<u64> {
-        let is_valid_transition_fn = |transition: &Vec<u16>, target: &Vec<u16>| -> bool {
-            target
-                .iter()
-                .zip(transition.iter())
-                .all(|(tar, cur)| tar >= cur)
-        };
-
-        let state_change_fn = |state: &Vec<u16>, transition: &Vec<u16>| -> Vec<u16> {
-            let mut state = state.clone();
-
-            for ord in transition {
-                state[*ord as usize] += 1;
-            }
-
-            state
-        };
-
-        let heuristic_fn = |curr: &Vec<u16>, target: &Vec<u16>| -> u16 {
-            let sum = target.iter().sum::<u16>();
-
-            let state_diff = target
-                .iter()
-                .zip(curr.iter())
-                .map(|(tar, cur)| *tar - *cur)
-                .sum::<u16>();
-
-            sum - state_diff
-        };
-
         let answer = parse_part_2(input)
-            .map(|(transitions, target_state)| {
-                println!("processing");
-
-                a_star_traversal(
-                    vec![0; target_state.len()],
-                    target_state,
-                    &transitions,
-                    is_valid_transition_fn,
-                    state_change_fn,
-                    heuristic_fn,
-                )
-            })
+            .map(|(buttons, target_state)| solve_linear_system(buttons, target_state))
             .sum();
 
         Ok(answer)
@@ -145,6 +105,172 @@ where
     }
 
     panic!("Expected to finish by now")
+}
+
+fn solve_linear_system(buttons: Vec<Vec<u16>>, target: Vec<u16>) -> u64 {
+    let matrix = Matrix::from_problem(&buttons, &target);
+    
+    // DFS over the reduced solution space
+    let max = target.iter().max().copied().unwrap_or(0) as usize + 1;
+    let mut min = usize::MAX;
+    let mut values = vec![0; matrix.independents.len()];
+    
+    dfs(&matrix, 0, &mut values, &mut min, max);
+    
+    min as u64
+}
+
+const EPSILON: f64 = 1e-9;
+
+struct Matrix {
+    data: Vec<Vec<f64>>,
+    rows: usize,
+    cols: usize,
+    dependents: Vec<usize>,
+    independents: Vec<usize>,
+}
+
+impl Matrix {
+    fn from_problem(buttons: &[Vec<u16>], target: &[u16]) -> Self {
+        let rows = target.len();
+        let cols = buttons.len();
+        let mut data = vec![vec![0.0; cols + 1]; rows];
+
+        // Build coefficient matrix: A[i][j] = 1 if button j affects counter i
+        for (c, button) in buttons.iter().enumerate() {
+            for &r in button {
+                let r = r as usize;
+                if r < rows {
+                    data[r][c] = 1.0;
+                }
+            }
+        }
+
+        // Add target values to the last column
+        for (r, &val) in target.iter().enumerate() {
+            data[r][cols] = val as f64;
+        }
+
+        let mut matrix = Self {
+            data,
+            rows,
+            cols,
+            dependents: Vec::new(),
+            independents: Vec::new(),
+        };
+
+        matrix.gaussian_elimination();
+        matrix
+    }
+
+    // https://en.wikipedia.org/wiki/Gaussian_elimination
+    fn gaussian_elimination(&mut self) {
+        let mut pivot = 0;
+        let mut col = 0;
+
+        while pivot < self.rows && col < self.cols {
+            // Find the best pivot row for this column
+            let (best_row, best_value) = self
+                .data
+                .iter()
+                .enumerate()
+                .skip(pivot)
+                .map(|(r, row)| (r, row[col].abs()))
+                .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
+                .unwrap();
+
+            // If the best value is zero, this is a free variable
+            if best_value < EPSILON {
+                self.independents.push(col);
+                col += 1;
+                continue;
+            }
+
+            // Swap rows and mark this column as dependent
+            self.data.swap(pivot, best_row);
+            self.dependents.push(col);
+
+            // Normalize pivot row
+            let pivot_value = self.data[pivot][col];
+            for val in &mut self.data[pivot][col..=self.cols] {
+                *val /= pivot_value;
+            }
+
+            // Eliminate this column in all other rows
+            for r in 0..self.rows {
+                if r != pivot {
+                    let factor = self.data[r][col];
+                    if factor.abs() > EPSILON {
+                        let pivot_row = self.data[pivot][col..=self.cols].to_vec();
+                        self.data[r][col..=self.cols]
+                            .iter_mut()
+                            .zip(&pivot_row)
+                            .for_each(|(val, &pivot_val)| {
+                                *val -= factor * pivot_val;
+                            });
+                    }
+                }
+            }
+
+            pivot += 1;
+            col += 1;
+        }
+
+        // Any remaining columns are free variables
+        self.independents.extend(col..self.cols);
+    }
+
+    // Check if the given values for independent variables are valid
+    fn valid(&self, values: &[usize]) -> Option<usize> {
+        // Start with how many times we've pressed the free variables
+        let mut total = values.iter().sum::<usize>();
+
+        // Calculate dependent variable values based on independent variables
+        for row in 0..self.dependents.len() {
+            // Calculate this dependent by subtracting the sum of free variable pushes from the solution
+            let val = self
+                .independents
+                .iter()
+                .enumerate()
+                .fold(self.data[row][self.cols], |acc, (i, &col)| {
+                    acc - self.data[row][col] * (values[i] as f64)
+                });
+
+            // We need non-negative, whole numbers for a valid solution
+            if val < -EPSILON {
+                return None;
+            }
+            let rounded = val.round();
+            if (val - rounded).abs() > EPSILON {
+                return None;
+            }
+
+            total += rounded as usize;
+        }
+
+        Some(total)
+    }
+}
+
+fn dfs(matrix: &Matrix, idx: usize, values: &mut [usize], min: &mut usize, max: usize) {
+    // When we've assigned all independent variables, check if it's a valid solution
+    if idx == matrix.independents.len() {
+        if let Some(total) = matrix.valid(values) {
+            *min = (*min).min(total);
+        }
+        return;
+    }
+
+    // Try different values for the current independent variable
+    let total: usize = values[..idx].iter().sum();
+    for val in 0..max {
+        // Optimization: If we ever go above our min, we can't possibly do better
+        if total + val >= *min {
+            break;
+        }
+        values[idx] = val;
+        dfs(matrix, idx + 1, values, min, max);
+    }
 }
 
 fn parse_part_2(input: &str) -> impl ParallelIterator<Item = (Vec<Vec<u16>>, Vec<u16>)> + use<'_> {
@@ -229,12 +355,29 @@ mod tests {
 
     #[test]
     fn test_part_2() -> Result<()> {
-        // let input = r#"[.##.] (3) (1,3) (2) (2,3) (0,2) (0,1) {3,5,4,7}"#;
-        // assert_eq!(Solution::part_2(input)?, 10);
-
-        let input = r#"[.##....#] (0,1,2,3,4,5,7) (0,2,3,7) (1,3,5,6) (0,1,2,6) (2,3,5,6,7) (2,4) (0,1,2,3,7) (0,2,3,5,6,7) {171,166,199,75,30,65,170,64}"#;
+        let input = r#"[.##.] (3) (1,3) (2) (2,3) (0,2) (0,1) {3,5,4,7}"#;
         assert_eq!(Solution::part_2(input)?, 10);
 
+        let input = r#"[...#.] (0,2,3,4) (2,3) (0,4) (0,1,2) (1,2,3,4) {7,5,12,7,2}"#;
+        assert_eq!(Solution::part_2(input)?, 12);
+
+        let input = r#"[.###.#] (0,1,2,3,4) (0,3,4) (0,1,2,4,5) (1,2) {10,11,11,5,10,5}"#;
+        assert_eq!(Solution::part_2(input)?, 11);
+        
+        // Test all three examples together
+        let input = r#"[.##.] (3) (1,3) (2) (2,3) (0,2) (0,1) {3,5,4,7}
+[...#.] (0,2,3,4) (2,3) (0,4) (0,1,2) (1,2,3,4) {7,5,12,7,2}
+[.###.#] (0,1,2,3,4) (0,3,4) (0,1,2,4,5) (1,2) {10,11,11,5,10,5}"#;
+        assert_eq!(Solution::part_2(input)?, 33);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_first_input_line() -> Result<()> {
+        let input = r#"[.##......] (0,1,3,4,6,7,8) (1,2,3,5,6,8) (0,1) (3,5,6,7) (2,5,7) (1,2,3,4,5,7,8) (7) (0,1,3) (0,3,7) (1,4,6) {36,63,29,56,28,48,43,52,23}"#;
+        let result = Solution::part_2(input)?;
+        println!("First line result: {}", result);
         Ok(())
     }
 }

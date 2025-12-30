@@ -1,0 +1,6 @@
+[package]
+name = "magic_squares_in_grid_840"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
